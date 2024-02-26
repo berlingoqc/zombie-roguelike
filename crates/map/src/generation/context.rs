@@ -48,10 +48,9 @@ pub struct Connection {
     pub size: usize,
     pub side: Side,
     pub starting_at: usize,
-
-
+    
     //pub level: Rc<AvailableLevel>,
-    pub compatiable_levels: Vec<(Rc<AvailableLevel>, usize)>,
+    pub compatiable_levels: Vec<(AvailableLevel, usize)>,
 }
 
 impl Connection {
@@ -75,11 +74,11 @@ pub struct AvailableLevel {
     pub level_size_p: (i32, i32),
     // type of level
     pub level_type: LevelType,
-    // reference to other level that can be connected to
-    pub connections: Vec<Rc<Connection>>,
+
+    pub connections: Vec<Connection>,
 }
 
-pub type AvailableLevels = HashMap<String, Rc<AvailableLevel>>;
+pub type AvailableLevels = HashMap<String, AvailableLevel>;
 
 #[derive(Debug)]
 pub struct AvailableLevelsPerType {
@@ -90,8 +89,8 @@ pub struct AvailableLevelsPerType {
 
 
 fn scan_width_side(
-    mut connections: &mut Vec<Rc<Connection>>,
-    level: &Rc<AvailableLevel>,
+    connections: &mut Vec<Connection>,
+    level: &AvailableLevel,
     level_size: &(usize, usize),
     grid: &Vec<&[i32]>,
     row_index: usize,
@@ -108,14 +107,13 @@ fn scan_width_side(
                 size += 1;
             }
 
-            connections.push(Rc::new(Connection { 
+            connections.push(Connection { 
                 index: level.connections.len(),
                 size,
                 side: side.clone(),
                 starting_at: i,
-                //level: level.clone(),
                 compatiable_levels: vec![],
-            }));
+            });
 
             i += size;
         } else {
@@ -125,8 +123,8 @@ fn scan_width_side(
 }
 
 fn scan_height_side(
-    mut connections: &mut Vec<Rc<Connection>>,
-    level: &Rc<AvailableLevel>,
+    connections: &mut Vec<Connection>,
+    level: &AvailableLevel,
     level_size: &(usize, usize),
     grid: &Vec<&[i32]>,
     column_index: usize,
@@ -143,14 +141,14 @@ fn scan_height_side(
                 size += 1;
             }
 
-            connections.push(Rc::new(Connection { 
+            connections.push(Connection { 
                 index: connections.len(),
                 size,
                 side: side.clone(),
                 starting_at: i,
                 //level: level.clone(),
                 compatiable_levels: vec![],
-            }));
+            });
 
             i += size;
         } else {
@@ -169,7 +167,7 @@ fn get_level_field(level: &Level, name: &str) -> Option<FieldValue> {
 
 impl AvailableLevel {
 
-    fn from_level(level: &Level, tile_size: &(i32, i32)) -> Rc<AvailableLevel> {
+    fn from_level(level: &Level, tile_size: &(i32, i32)) -> AvailableLevel {
         let level_size: (usize, usize) = (
             (level.px_wid / tile_size.0) as usize,
             (level.px_hei / tile_size.1) as usize
@@ -201,13 +199,13 @@ impl AvailableLevel {
         };
  
 
-        let mut available_level = Rc::new(Self { 
+        let mut available_level = Self { 
             level_id: level.identifier.clone(),
             connections: vec![],
             level_size,
             level_size_p: (level_size.0 as i32 * tile_size.0, level_size.1 as i32 * tile_size.1),
             level_type,
-        });
+        };
 
 
         let mut connections= vec![];
@@ -217,9 +215,7 @@ impl AvailableLevel {
         scan_height_side(&mut connections, &available_level, &level_size, &grid, 0, Side::W);
         scan_height_side(&mut connections, &available_level, &level_size, &grid, level_size.0 - 1, Side::E);
 
-        {
-            Rc::get_mut(&mut available_level).unwrap().connections = connections;
-        }
+        available_level.connections = connections;
 
         available_level
     }
@@ -227,7 +223,7 @@ impl AvailableLevel {
 
 impl AvailableLevelsPerType {
 
-    fn from_available_level(available_levels: Vec<Rc<AvailableLevel>>) -> Self {
+    fn from_available_level(available_levels: Vec<AvailableLevel>) -> Self {
 
         let mut per_type = Self { 
             spawning: AvailableLevels::new(),
@@ -247,9 +243,9 @@ impl AvailableLevelsPerType {
     }
 }
 
-fn populate_level_connections(available_levels: &mut Vec<Rc<AvailableLevel>>) {
+fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
 
-    let mut to_add_elements: Vec<(usize, usize, (Rc<AvailableLevel>, usize))> = vec![];
+    let mut to_add_elements: Vec<(usize, usize, (AvailableLevel, usize))> = vec![];
 
     let mut i = 0;
     while i < available_levels.len() {
@@ -294,9 +290,7 @@ fn populate_level_connections(available_levels: &mut Vec<Rc<AvailableLevel>>) {
     }
 
     for to_add in to_add_elements {
-        let available_level = Rc::get_mut(&mut available_levels[to_add.0]).unwrap();
-        let connection = Rc::get_mut(&mut available_level.connections[to_add.1]).unwrap();
-        connection.compatiable_levels.push(to_add.2);
+        available_levels[to_add.0].connections[to_add.1].compatiable_levels.push(to_add.2);
     }
 
 }
@@ -333,7 +327,7 @@ impl MapGenerationContext {
             config.max_width, config.max_heigth
         );
 
-        let mut available_levels: Vec<Rc<AvailableLevel>> = map_json.levels.iter()
+        let mut available_levels: Vec<AvailableLevel> = map_json.levels.iter()
             .map(|item| {
                 AvailableLevel::from_level(&item, &tile_size)
             }).collect();

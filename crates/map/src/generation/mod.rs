@@ -7,8 +7,6 @@ mod room;
 pub mod config;
 
 
-use std::rc::Rc;
-
 use bevy_ecs_ldtk::ldtk::LdtkJson;
 
 use crate::generation::{imp::get_implementation, room::GeneratedMap};
@@ -17,8 +15,8 @@ use self::{context::{MapGenerationContext, AvailableLevel}, position::Position};
 
 
 trait IMapGeneration {
-    fn get_spawning_room(&mut self) -> (Rc<AvailableLevel>, Position);
-    fn get_next_room(&mut self) -> Option<(Rc<AvailableLevel>, Position)>;
+    fn get_spawning_room(&mut self) -> (AvailableLevel, Position);
+    fn get_next_room(&mut self) -> Option<(AvailableLevel, Position)>;
 }
 
 

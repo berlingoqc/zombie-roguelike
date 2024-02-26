@@ -5,7 +5,7 @@ use crate::generation::{context::{MapGenerationContext, MapGenerationData, Avail
 use rand::Rng;
 
 
-type Room = (Rc<AvailableLevel>, Position);
+type Room = (AvailableLevel, Position);
 
 struct Map {
     last_generated_room: Option<Room>,
@@ -38,7 +38,7 @@ impl BasicMapGeneration {
 
 impl IMapGeneration for BasicMapGeneration {
 
-    fn get_spawning_room(&mut self) ->  (Rc<AvailableLevel>, Position) {
+    fn get_spawning_room(&mut self) ->  (AvailableLevel, Position) {
 
         let spawning_room_def = self.context.available_levels.spawning.values()
             .skip(self.data.rng.gen_range(0..=self.context.available_levels.spawning.len() - 1))
@@ -61,7 +61,7 @@ impl IMapGeneration for BasicMapGeneration {
 
     }
 
-    fn get_next_room(&mut self) -> Option<(Rc<AvailableLevel>, Position)> {
+    fn get_next_room(&mut self) -> Option<(AvailableLevel, Position)> {
 
         if self.map.rooms_possible.len() == 0 {
             return None;
