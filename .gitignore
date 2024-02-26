@@ -1,0 +1,8 @@
+**/target*
+*.d.ts
+.DS_Store
+**/vendor*
+**/public/*.js
+**/public/*.wasm
+**/public/assets/
+
