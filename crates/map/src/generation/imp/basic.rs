@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use crate::generation::{context::{MapGenerationContext, MapGenerationData, AvailableLevel, LevelType, Connection}, IMapGeneration, position::Position, Room};
 
 use rand::{Rng, seq::SliceRandom};
@@ -35,8 +33,8 @@ impl BasicMapGeneration {
 
 impl BasicMapGeneration {
 
-    fn get_next_room_recursize(&mut self) -> Option<Room> {
-        let room: Option<Room> = {
+    fn get_next_room_recursize(&mut self) -> Option<(Room, Connection, Connection)> {
+        let room: Option<(Room, Connection, Connection)> = {
             if self.map.last_generated_room_index.is_none() {
                 println!("ending generation because last generated room is empty");
                 return None;
@@ -46,7 +44,7 @@ impl BasicMapGeneration {
 
             let previous_room_c1 = previous_room.clone();
 
-            let mut connections: Vec<&mut crate::generation::context::Connection> = previous_room.0.connections.iter_mut()
+            let mut connections: Vec<&mut crate::generation::context::Connection> = previous_room.level.connections.iter_mut()
                 .filter(|i| i.to.is_none())
                 .collect();
 
@@ -67,7 +65,7 @@ impl BasicMapGeneration {
                 return self.get_next_room_recursize();
             }
 
-            println!("room id={} has {} connection available", previous_room_c1.0.level_id, connection_len);
+            println!("room id={} has {} connection available", previous_room_c1.level.level_id, connection_len);
 
             let connection = connections.iter_mut()
                 .skip(self.data.rng.gen_range(0..=connection_len- 1))
@@ -101,11 +99,11 @@ impl BasicMapGeneration {
                 println!("trying level {} with is connection {}", level.0.level_id, level_connection);
 
                 let my_position = previous_room_c1.get_connecting_room_position(&connection, &level.0, level.1, &self.context.tile_size);
-                let new_room = Room(level.0.clone(), my_position);
+                let new_room = Room::create(level.0.clone(), my_position);
 
                 connection.to = Some(crate::generation::context::ConnectionTo::Room(level.clone()));
 
-                return Some(new_room);
+                return Some((new_room, level_connection.clone(),  connection.clone()));
             }
             
 
@@ -114,7 +112,7 @@ impl BasicMapGeneration {
 
 
         if let Some(room) = room.as_ref() {
-            self.map.rooms.push(room.clone());
+            self.map.rooms.push(room.0.clone());
             self.map.last_generated_room_index = Some(self.map.rooms.len() - 1);
         }
 
@@ -147,7 +145,7 @@ impl IMapGeneration for BasicMapGeneration {
         let y: i32 = self.data.rng.gen_range(self.context.config.get_range_y(spawning_room_def.level_size_p.1));
 
 
-        let spawning_room_def = Room(spawning_room_def.clone(), Position(x,y));
+        let spawning_room_def = Room::create(spawning_room_def.clone(), Position(x,y));
         self.map.rooms.push(spawning_room_def.clone());
         self.map.last_generated_room_index = Some(0);
 
@@ -156,7 +154,7 @@ impl IMapGeneration for BasicMapGeneration {
 
     }
 
-    fn get_next_room(&mut self) -> Option<Room> {
+    fn get_next_room(&mut self) -> Option<(Room, Connection, Connection)> {
         self.get_next_room_recursize()
     }
 }

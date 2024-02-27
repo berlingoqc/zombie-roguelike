@@ -7,6 +7,7 @@ mod room;
 pub mod config;
 
 
+use bevy::utils::Uuid;
 use bevy_ecs_ldtk::ldtk::LdtkJson;
 
 use crate::generation::{imp::get_implementation, room::GeneratedMap};
@@ -14,20 +15,30 @@ use crate::generation::{imp::get_implementation, room::GeneratedMap};
 use self::{context::{MapGenerationContext, AvailableLevel, Connection, Side}, position::Position};
 
 #[derive(Debug, Clone)]
-pub struct Room(pub AvailableLevel, pub Position);
+pub struct Room{
+    pub level: AvailableLevel, pub position: Position
+}
 
 impl Room {
+    pub fn create(mut level: AvailableLevel, position: Position) -> Self {
 
+        level.level_iid = Uuid::new_v4().into();
+        for c in level.connections.iter_mut() {
+            c.level_iid = level.level_iid.clone();
+        }
+
+        Self { level: level, position: position }
+    }
 
     pub fn is_overlapping(&self, other: &Room) -> bool {
 
         // find if we are overlapping
-        let left_of_other = self.1.0 + self.0.level_size_p.0 < other.1.0;
-        let left_of_self = other.1.0 + other.0.level_size_p.0 < self.1.0;
+        let left_of_other = self.position.0 + self.level.level_size_p.0 < other.position.0;
+        let left_of_self = other.position.0 + other.level.level_size_p.0 < self.position.0;
 
         // Check if one square is above the other
-        let above_other = self.1.1 + self.0.level_size_p.1 < other.1.1;
-        let above_self = other.1.1 + other.0.level_size_p.1 < self.1.1;
+        let above_other = self.position.1 + self.level.level_size_p.1 < other.position.1;
+        let above_self = other.position.1 + other.level.level_size_p.1 < self.position.1;
 
         // If neither square is to the left or above the other, they overlap
         !(left_of_other || left_of_self || above_other || above_self)
@@ -38,7 +49,7 @@ impl Room {
         tile_size: &(i32, i32),
     ) -> Position {
 
-        let my_position = &self.1;
+        let my_position = &self.position;
 
         let their_connection = their_level.connections.get(their_connection).unwrap();
 
@@ -50,16 +61,16 @@ impl Room {
                 let offset_pixel = (offset as i32) * tile_size.0;
 
                 Position(
-                    my_position.0 + (my_connection.side.get_factor() * (their_level.level_size_p.0 + offset_pixel)),
-                    my_position.1 + (my_connection.side.get_factor() * their_level.level_size_p.1),
+                    my_position.0 + (their_connection.side.get_factor() * (offset_pixel)),
+                    my_position.1 + (their_connection.side.get_factor() * -1 * their_level.level_size_p.1),
                 )
             },
             Side::W | Side::E => {
                 let offset_pixel = (offset as i32) * tile_size.1;
 
                 Position(
-                    my_position.0 + (my_connection.side.get_factor() * their_level.level_size_p.0),
-                    my_position.1 + (my_connection.side.get_factor() * (their_level.level_size_p.1 + offset_pixel)),
+                    my_position.0 + (their_connection.side.get_factor() * -1 * their_level.level_size_p.0),
+                    my_position.1 + (their_connection.side.get_factor() * (offset_pixel)),
                 )
             }
         }
@@ -73,7 +84,7 @@ impl Room {
 
 trait IMapGeneration {
     fn get_spawning_room(&mut self) -> Room; 
-    fn get_next_room(&mut self) -> Option<Room>;
+    fn get_next_room(&mut self) -> Option<(Room, Connection, Connection)>;
 }
 
 
@@ -87,10 +98,10 @@ pub fn map_generation(mut map_json: LdtkJson, config: config::MapGenerationConfi
     // select the spawning room
     let room = generator.get_spawning_room();
 
-    generated_map.add_room(&room.0, room.1);
+    generated_map.add_room(&room.level, room.position, None, None);
 
-    while let Some(next_room) = generator.get_next_room() {
-        generated_map.add_room(&next_room.0, next_room.1);
+    while let Some((next_room, next_room_connection, other_room_connection)) = generator.get_next_room() {
+        generated_map.add_room(&next_room.level, next_room.position, Some(&next_room_connection), Some(&other_room_connection));
     }
 
     println!("map generation is over");

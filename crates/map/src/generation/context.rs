@@ -26,6 +26,15 @@ impl Side {
         }
     }
 
+    pub fn to_dir_str(&self) -> &'static str {
+        match self {
+            Side::N => "n",
+            Side::E => "e",
+            Side::S => "s",
+            Side::W => "w"
+        }
+    }
+
     pub fn get_factor(&self) -> i32 {
         match self {
             Side::N | Side::W => -1,
@@ -63,6 +72,7 @@ pub struct Connection {
     pub side: Side,
     pub starting_at: usize,
     
+    pub level_iid: String,
     pub level_id: String,
     pub compatiable_levels: Vec<(AvailableLevel, usize)>,
 
@@ -91,6 +101,7 @@ impl Connection {
 pub struct AvailableLevel {
     // identifier of the original level
     pub level_id: String,
+    pub level_iid: String,
     // level size in tile
     pub level_size: (usize, usize),
     // level size in px
@@ -136,6 +147,7 @@ fn scan_width_side(
                 side: side.clone(),
                 starting_at: i,
                 level_id: level.level_id.clone(),
+                level_iid: String::default(),
                 to: None,
                 compatiable_levels: vec![],
             });
@@ -172,6 +184,7 @@ fn scan_height_side(
                 side: side.clone(),
                 starting_at: i,
                 level_id: level.level_id.clone(),
+                level_iid: String::default(),
                 to: None,
                 compatiable_levels: vec![],
             });
@@ -230,6 +243,7 @@ impl AvailableLevel {
             connections: vec![],
             level_size,
             level_size_p: (level_size.0 as i32 * tile_size.0, level_size.1 as i32 * tile_size.1),
+            level_iid: String::default(),
             level_type,
         };
 
@@ -246,30 +260,6 @@ impl AvailableLevel {
         available_level
     }
 }
-
-/*
-impl AvailableLevelsPerType {
-
-    fn from_available_level(available_levels: Vec<AvailableLevel>) -> Self {
-
-        let mut per_type = Self { 
-            spawning: AvailableLevels::new(),
-            regular: AvailableLevels::new(),
-        };
-
-        available_levels.into_iter().for_each(|v| {
-            if v.level_type == LevelType::Normal {
-                per_type.regular.insert(v.level_id.clone(), v);
-            } else if v.level_type == LevelType::Spawn {
-                per_type.spawning.insert(v.level_id.clone(), v);
-            }
-        });
-
-
-        per_type
-    }
-}
-*/
 
 fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
 

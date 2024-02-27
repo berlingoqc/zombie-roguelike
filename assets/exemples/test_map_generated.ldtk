@@ -551,8 +551,8 @@
         "__cHei": 6,
         "__cWid": 7,
         "cachedPixelData": {
-          "opaqueTiles": "000000100000010000001000000100000010000001",
-          "averageColors": "49654965496549650000000000004a65596549654955495449650000585459545854595400000000000049654965496500000000000000005a775a87000000000000000000004965596500000000000000000000"
+          "averageColors": "49654965496549650000000000004a65596549654955495449650000585459545854595400000000000049654965496500000000000000005a775a87000000000000000000004965596500000000000000000000",
+          "opaqueTiles": "000000100000010000001000000100000010000001"
         },
         "customData": [],
         "embedAtlas": null,
@@ -589,13 +589,11 @@
       "__neighbours": [
         {
           "dir": "e",
-          "levelIid": "3d572040-b0a0-11ee-bca1-1bca725465d2",
-          "levelUid": null
+          "levelIid": "d585bb94-699f-4975-93e2-263c3cff8c3e"
         },
         {
-          "dir": "se",
-          "levelIid": "71c606c0-b0a0-11ee-87cd-4b440e7a2f34",
-          "levelUid": null
+          "dir": "n",
+          "levelIid": "3604fda1-9519-469e-bb2a-3e08b9fafd1b"
         }
       ],
       "__smartColor": "#ADADB5",
@@ -622,8 +620,8 @@
           ]
         }
       ],
-      "identifier": "Level_0:9f64dd1e-070b-4823-9bf1-f5e5383e7ca7",
-      "iid": "9f64dd1e-070b-4823-9bf1-f5e5383e7ca7",
+      "identifier": "Level_0",
+      "iid": "08e457c2-b46a-4007-979f-04df7ec0476e",
       "layerInstances": [
         {
           "__cHei": 19,
@@ -10201,13 +10199,7 @@
       "__neighbours": [
         {
           "dir": "w",
-          "levelIid": "ab6b2910-b0a0-11ee-bca1-6fa9ed374967",
-          "levelUid": null
-        },
-        {
-          "dir": "s",
-          "levelIid": "71c606c0-b0a0-11ee-87cd-4b440e7a2f34",
-          "levelUid": null
+          "levelIid": "08e457c2-b46a-4007-979f-04df7ec0476e"
         }
       ],
       "__smartColor": "#ADADB5",
@@ -10227,8 +10219,8 @@
           "realEditorValues": []
         }
       ],
-      "identifier": "Level_1:82ddf2c3-656a-4f8f-9244-0fac0218e391",
-      "iid": "82ddf2c3-656a-4f8f-9244-0fac0218e391",
+      "identifier": "Level_1",
+      "iid": "d585bb94-699f-4975-93e2-263c3cff8c3e",
       "layerInstances": [
         {
           "__cHei": 19,
@@ -19736,21 +19728,15 @@
       "useAutoIdentifier": true,
       "worldDepth": 0,
       "worldX": 218,
-      "worldY": 54
+      "worldY": -250
     },
     {
       "__bgColor": "#696A79",
       "__bgPos": null,
       "__neighbours": [
         {
-          "dir": "w",
-          "levelIid": "ab6b2910-b0a0-11ee-bca1-6fa9ed374967",
-          "levelUid": null
-        },
-        {
           "dir": "s",
-          "levelIid": "71c606c0-b0a0-11ee-87cd-4b440e7a2f34",
-          "levelUid": null
+          "levelIid": "08e457c2-b46a-4007-979f-04df7ec0476e"
         }
       ],
       "__smartColor": "#ADADB5",
@@ -19770,8 +19756,8 @@
           "realEditorValues": []
         }
       ],
-      "identifier": "Level_1:1ac00298-9ada-435c-9ef0-da5e96574442",
-      "iid": "1ac00298-9ada-435c-9ef0-da5e96574442",
+      "identifier": "Level_2",
+      "iid": "3604fda1-9519-469e-bb2a-3e08b9fafd1b",
       "layerInstances": [
         {
           "__cHei": 19,
@@ -29278,7 +29264,7 @@
       "uid": 22,
       "useAutoIdentifier": true,
       "worldDepth": 0,
-      "worldX": -614,
+      "worldX": -198,
       "worldY": -554
     }
   ],
