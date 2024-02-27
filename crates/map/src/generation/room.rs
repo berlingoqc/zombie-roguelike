@@ -18,7 +18,7 @@ impl GeneratedRoom {
             .clone();
 
         level.iid = Uuid::new_v4().to_string();
-        level.identifier = level.iid.clone();
+        level.identifier = format!("{}:{}", level.identifier, level.iid.clone());
 
         GeneratedRoom{
             level

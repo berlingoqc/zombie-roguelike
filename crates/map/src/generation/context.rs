@@ -4,7 +4,7 @@ use bevy_ecs_ldtk::{ldtk::{LdtkJson, Level}, prelude::{LayerInstance, FieldValue
 
 use super::{map_const, config::MapGenerationConfig};
 
-use std::{collections::HashMap, usize, rc::Rc};
+use std::{collections::HashMap, usize, rc::Rc, fmt::Display};
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -17,7 +17,7 @@ pub enum Side {
 
 impl Side {
 
-    fn get_opposite(&self) -> Self {
+    pub fn get_opposite(&self) -> Self {
         match self {
             Side::N => Side::S,
             Side::S => Side::N,
@@ -26,7 +26,15 @@ impl Side {
         }
     }
 
-    fn is_opposite(&self, other: Side) -> bool {
+    pub fn get_factor(&self) -> i32 {
+        match self {
+            Side::N | Side::W => -1,
+            Side::S | Side::E => 1,
+            
+        }
+    }
+
+    pub fn is_opposite(&self, other: Side) -> bool {
         other == self.get_opposite()
     }
     
@@ -38,9 +46,15 @@ pub enum LevelType {
     Spawn,
     Normal,
 }
- 
-pub type CompatibleLevel = (String, usize);
 
+
+#[derive(Debug, Clone)]
+pub enum ConnectionTo {
+    Room((AvailableLevel, usize)),
+    DeadEnd,
+    OutSide,
+}
+ 
 
 #[derive(Debug, Clone)]
 pub struct Connection {
@@ -49,8 +63,17 @@ pub struct Connection {
     pub side: Side,
     pub starting_at: usize,
     
-    //pub level: Rc<AvailableLevel>,
+    pub level_id: String,
     pub compatiable_levels: Vec<(AvailableLevel, usize)>,
+
+    pub to: Option<ConnectionTo>,
+}
+
+impl Display for Connection {
+    
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "side={:?} starting_at={} size={}", self.size, self.starting_at, self.size)
+    }
 }
 
 impl Connection {
@@ -78,7 +101,7 @@ pub struct AvailableLevel {
     pub connections: Vec<Connection>,
 }
 
-pub type AvailableLevels = HashMap<String, AvailableLevel>;
+pub type AvailableLevels = Vec<AvailableLevel>;
 
 #[derive(Debug)]
 pub struct AvailableLevelsPerType {
@@ -112,6 +135,8 @@ fn scan_width_side(
                 size,
                 side: side.clone(),
                 starting_at: i,
+                level_id: level.level_id.clone(),
+                to: None,
                 compatiable_levels: vec![],
             });
 
@@ -146,7 +171,8 @@ fn scan_height_side(
                 size,
                 side: side.clone(),
                 starting_at: i,
-                //level: level.clone(),
+                level_id: level.level_id.clone(),
+                to: None,
                 compatiable_levels: vec![],
             });
 
@@ -221,6 +247,7 @@ impl AvailableLevel {
     }
 }
 
+/*
 impl AvailableLevelsPerType {
 
     fn from_available_level(available_levels: Vec<AvailableLevel>) -> Self {
@@ -242,6 +269,7 @@ impl AvailableLevelsPerType {
         per_type
     }
 }
+*/
 
 fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
 
@@ -300,7 +328,7 @@ pub struct MapGenerationContext {
     pub tile_size: (i32, i32),
     pub level_size: (i32, i32),
 
-    pub available_levels: AvailableLevelsPerType,
+    pub available_levels: AvailableLevels,
 
     pub config: MapGenerationConfig,
 }
@@ -340,7 +368,7 @@ impl MapGenerationContext {
             level_size,
             tile_size,
             config,
-            available_levels:AvailableLevelsPerType::from_available_level(available_levels),
+            available_levels,
         }
     }
 
