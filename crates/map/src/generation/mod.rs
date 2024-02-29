@@ -12,7 +12,7 @@ use bevy_ecs_ldtk::ldtk::LdtkJson;
 
 use crate::generation::{imp::get_implementation, room::GeneratedMap};
 
-use self::{context::{MapGenerationContext, AvailableLevel, Connection, Side}, position::Position};
+use self::{config::MapGenerationConfig, context::{AvailableLevel, Connection, MapGenerationContext, Side}, position::Position};
 
 #[derive(Debug, Clone)]
 pub struct Room{
@@ -30,6 +30,11 @@ impl Room {
         Self { level: level, position: position }
     }
 
+    pub fn set_connection_to(&mut self, my_connection_index: usize, their_level: &AvailableLevel, their_connection_index: usize) {
+        let my_connection = self.level.connections.get_mut(my_connection_index).unwrap();
+        my_connection.to = Some(context::ConnectionTo::Room((their_level.clone(), their_connection_index)));
+    }
+
     pub fn is_overlapping(&self, other: &Room) -> bool {
 
         // find if we are overlapping
@@ -43,6 +48,17 @@ impl Room {
         // If neither square is to the left or above the other, they overlap
         !(left_of_other || left_of_self || above_other || above_self)
     }
+
+    // check if top-left corner is outside or not
+    pub fn is_outside(&self, config: &MapGenerationConfig) -> bool {
+
+        let position = &self.position;
+
+
+        (position.0 > config.max_width || position.0 < (config.max_width * -1)) ||
+        (position.1 > config.max_heigth || position.1 < (config.max_heigth * -1))
+    }
+
 
     pub fn get_connecting_room_position(
         &self, my_connection: &Connection, their_level: &AvailableLevel, their_connection: usize,

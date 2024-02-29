@@ -4422,6 +4422,7 @@ dependencies = [
  "derive-getters",
  "map",
  "pathfinding",
+ "rand",
  "regex",
  "serde",
  "serde_json",

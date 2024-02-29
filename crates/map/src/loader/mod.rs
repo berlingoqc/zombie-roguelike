@@ -13,6 +13,17 @@ static mut CONFIG: Lazy<MapGenerationConfig> = Lazy::new(|| {
     MapGenerationConfig::default()
 });
 
+fn set_global_config(config: &MapGenerationConfig) {
+    unsafe {
+        let rf = Lazy::force_mut(&mut CONFIG);
+        rf.seed = config.seed;
+        rf.max_width = config.max_width;
+        rf.max_heigth = config.max_heigth;
+        rf.mode = config.mode;
+        rf.map_path = config.map_path.clone();
+    }
+}
+
 
 pub fn get_asset_loader_generation() -> LdtkProjectLoader {
 
@@ -28,21 +39,21 @@ pub fn get_asset_loader_generation() -> LdtkProjectLoader {
 
 }
 
-
-pub fn setup_generated_map(
-    mut commands: Commands, asset_server: Res<AssetServer>,
-    config: Res<MapGenerationConfig>,
-
+pub fn reload_map(
+    asset_server: &Res<AssetServer>,
+    config: &MapGenerationConfig,
 ) {
+    set_global_config(config);
+    asset_server.reload(config.map_path.clone());
+}
 
-    unsafe {
-        let rf = Lazy::force_mut(&mut CONFIG);
-        rf.seed = config.seed;
-        rf.max_width = config.max_width;
-        rf.max_heigth = config.max_heigth;
-        rf.mode = config.mode;
-        rf.map_path = config.map_path.clone();
-    }
+
+pub fn load_map(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    config: &MapGenerationConfig,
+) {
+    set_global_config(config);
 
     let ldtk_handle = asset_server.load_with_settings(config.map_path.clone(), |s: &mut LdtkProjectLoaderSettings| {
         unsafe {
@@ -54,8 +65,19 @@ pub fn setup_generated_map(
         }
     });
 
+    let level_set = LevelSet::default();
+
     commands.spawn(LdtkWorldBundle {
         ldtk_handle,
+        level_set,
         ..Default::default()
     });
+
+}
+
+pub fn setup_generated_map(
+    mut commands: Commands, asset_server: Res<AssetServer>,
+    config: Res<MapGenerationConfig>,
+) {
+    load_map(&mut commands, &asset_server, config.as_ref())
 }

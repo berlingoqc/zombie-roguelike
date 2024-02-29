@@ -24,7 +24,7 @@ pub struct MapGenerationConfig {
 
 impl Default for MapGenerationConfig {
     fn default() -> Self {
-        Self { seed: 1, max_width: 255, max_heigth: 255, map_path: "".into(),  mode: MapGenerationMode::Basic }
+        Self { seed: 1, max_width: 1000, max_heigth: 1000, map_path: "".into(),  mode: MapGenerationMode::Basic }
     }
 }
 

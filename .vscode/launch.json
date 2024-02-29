@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Map generation",
+        "type": "lldb",
+        "request": "launch",
+        "program": "${workspaceRoot}/target/debug/examples/map_generation",
+        "args": [
+            "assets/exemples/test_map.ldtk",
+            "assets/exemples/test_map_generated.ldtk",
+            "2057489116"
+        ],
+        "cwd": "${workspaceRoot}"
+      },
+      {
+        "name": "Map preview",
+        "type": "lldb",
+        "request": "launch",
+        "program": "${workspaceRoot}/target/debug/examples/map_preview",
+        "args": [
+            "exemples/test_map.ldtk",
+            "42224"
+        ],
+        "cwd": "${workspaceRoot}",
+      }
+    ]
+  }
+  

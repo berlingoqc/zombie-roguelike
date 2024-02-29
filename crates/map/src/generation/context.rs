@@ -4,7 +4,7 @@ use bevy_ecs_ldtk::{ldtk::{LdtkJson, Level}, prelude::{LayerInstance, FieldValue
 
 use super::{map_const, config::MapGenerationConfig};
 
-use std::{collections::HashMap, usize, rc::Rc, fmt::Display};
+use std::{usize, fmt::Display};
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -74,7 +74,7 @@ pub struct Connection {
     
     pub level_iid: String,
     pub level_id: String,
-    pub compatiable_levels: Vec<(AvailableLevel, usize)>,
+    pub compatiable_levels: Vec<(String, usize)>,
 
     pub to: Option<ConnectionTo>,
 }
@@ -271,7 +271,8 @@ fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
 
         while y < available_levels[i].connections.len() {
 
-            let connection = available_levels[i].connections.get(y).unwrap();
+            let level = &available_levels[i];
+            let connection = level.connections.get(y).unwrap();
 
             let mut ii = 1;
 
@@ -286,13 +287,20 @@ fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
                 while yy < available_levels[ii + i].connections.len() {
 
 
-                    let other_connection = available_levels[ii + i].connections.get(yy).unwrap();
+                    let other_level = &available_levels[ii + i];
+
+                    let other_connection = other_level.connections.get(yy).unwrap();
 
                     if connection.are_matching(&other_connection) {
 
-                        to_add_elements.push((i, y, (available_levels[ii + i].clone(), yy)));
+                        if other_level.level_type != LevelType::Spawn {
+                            to_add_elements.push((i, y, (available_levels[ii + i].clone(), yy)));
+                        }
 
-                        to_add_elements.push((i + ii, yy, (available_levels[i].clone(), y)));
+                        // adding otherlevel to add to level
+                        if level.level_type != LevelType::Spawn {
+                            to_add_elements.push((i + ii, yy, (available_levels[i].clone(), y)));
+                        }
                     }
 
                     yy += 1;
@@ -308,7 +316,7 @@ fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
     }
 
     for to_add in to_add_elements {
-        available_levels[to_add.0].connections[to_add.1].compatiable_levels.push(to_add.2);
+        available_levels[to_add.0].connections[to_add.1].compatiable_levels.push((to_add.2.0.level_id.clone(), to_add.2.1));
     }
 
 }
@@ -340,8 +348,8 @@ impl MapGenerationContext {
             first_level.px_hei / tile_size.1
         );
 
-        println!("starting level generation for base_map={} \nseed={} \ntilse_size={}x{} \nlevel_size={}x{}\nmap_size={}x{}", 
-            config.map_path, config.seed, tile_size.0, tile_size.1, level_size.0, level_size.1,
+        println!("starting level generation with config \nseed={} \ntilse_size={}x{} \nlevel_size={}x{}\nmap_size={}x{}", 
+            config.seed, tile_size.0, tile_size.1, level_size.0, level_size.1,
             config.max_width, config.max_heigth
         );
 

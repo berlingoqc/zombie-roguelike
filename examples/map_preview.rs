@@ -1,11 +1,13 @@
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::tracing::level_filters};
 use bevy_ecs_ldtk::prelude::*;
 
 use utils::camera::tod::{move_camera, setup_camera};
-use map::{loader::{setup_generated_map, get_asset_loader_generation}, generation::config::MapGenerationConfig};
+use map::{generation::config::MapGenerationConfig, loader::{get_asset_loader_generation, reload_map, setup_generated_map}};
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+
+use rand::Rng;
 
 use std::env;
 
@@ -19,22 +21,77 @@ fn main() {
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(LdtkPlugin)
-        .add_systems(Startup, setup_generated_map)
         .add_systems(Startup, setup_camera)
-        .insert_resource(LevelSelection::index(0))
+        .add_systems(Startup, setup_generated_map)
         .insert_resource(LdtkSettings{
-            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation { load_level_neighbors: true},
+            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation { load_level_neighbors: false },
             ..default()
         })
         .insert_resource(map_generation_config)
+
         .register_asset_loader(level_loader)
         .add_systems(
             Update,
             (
+                load_levels_if_not_present,
                 move_camera,
+                keyinput,
             ),
         )
         .run();
+
+}
+
+
+// should be a step before the game part
+fn load_levels_if_not_present(
+    ldtk_project: Res<Assets<LdtkProject>>,
+    mut level_set: Query<&mut LevelSet>,
+) {
+
+    if ldtk_project.is_empty() { return; }
+    let ids: Vec<_> =  ldtk_project.ids().collect();
+    let id = ids.get(0).unwrap();
+
+    let ldtk_project = ldtk_project.get(*id).unwrap();
+    let level_iids: Vec<_> = ldtk_project.data().iter_raw_levels().map(|l| l.iid.clone()).collect();
+
+
+    let mut level_set = level_set.iter_mut().last().unwrap();
+    if level_set.iids.len() > 0 {
+        let mut clear = false;
+        for iid in level_set.iids.iter() {
+            if level_iids.iter().find(|x| iid.to_string() == **x).is_none() {
+                clear = true;
+                break;
+            }
+        }
+        if clear {
+            level_set.iids.clear();
+        }
+    }
+
+    level_iids.iter().for_each(|id| { level_set.iids.insert(LevelIid::new(id)); });
+}
+
+fn keyinput(
+    input: Res<Input<KeyCode>>,
+    level_query: Query<Entity, With<LevelIid>>,
+    mut commands: Commands, asset_server: Res<AssetServer>,
+    mut config: ResMut<MapGenerationConfig>,
+    mut level_set: Query<&mut LevelSet>,
+) {
+
+    if input.just_pressed(KeyCode::R) {
+        for level_entity in &level_query {
+            commands.entity(level_entity).despawn_recursive()
+        }
+        config.seed = rand::thread_rng().gen();
+        reload_map(&asset_server, config.as_ref());
+        for mut level_set in level_set.iter_mut() {
+            level_set.iids.clear();
+        }
+    }
 
 }
 
