@@ -33,10 +33,8 @@ impl BasicMapGeneration {
 
 impl BasicMapGeneration {
 
-    // I NEED TO MARK BOTH CONNECTION AS CLOSE NOT JUST THE ONE
-
     fn get_next_room_recursize(&mut self) -> Option<(Room, Connection, Connection)> {
-        if self.map.rooms.len() > 4 {
+        if self.map.rooms.len() > 15 {
             return None;
         }
         let room: Option<(Room, Connection, Connection)> = {
@@ -103,8 +101,8 @@ impl BasicMapGeneration {
                         self.get_next_room_recursize()
 
                     } else {
-                        connection.to = Some(crate::generation::context::ConnectionTo::Room((compatible_level_def.clone(), compatible_level.1)));
                         new_room.set_connection_to(level_connection.index, &previous_room_c1.level, connection.index);
+                        connection.to = Some(crate::generation::context::ConnectionTo::Room((new_room.level.clone(), level_connection.index)));
 
                         Some((new_room, level_connection.clone(),  connection.clone()))
                     }

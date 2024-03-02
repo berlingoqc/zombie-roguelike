@@ -124,6 +124,7 @@ pub struct AvailableLevelsPerType {
 
 fn scan_width_side(
     connections: &mut Vec<Connection>,
+    index: &mut usize,
     level: &AvailableLevel,
     level_size: &(usize, usize),
     grid: &Vec<&[i32]>,
@@ -142,7 +143,7 @@ fn scan_width_side(
             }
 
             connections.push(Connection { 
-                index: level.connections.len(),
+                index: *index,
                 size,
                 side: side.clone(),
                 starting_at: i,
@@ -152,6 +153,8 @@ fn scan_width_side(
                 compatiable_levels: vec![],
             });
 
+            *index = *index + 1;
+            
             i += size;
         } else {
             i += 1;
@@ -161,6 +164,7 @@ fn scan_width_side(
 
 fn scan_height_side(
     connections: &mut Vec<Connection>,
+    index: &mut usize,
     level: &AvailableLevel,
     level_size: &(usize, usize),
     grid: &Vec<&[i32]>,
@@ -179,7 +183,7 @@ fn scan_height_side(
             }
 
             connections.push(Connection { 
-                index: connections.len(),
+                index: *index,
                 size,
                 side: side.clone(),
                 starting_at: i,
@@ -188,6 +192,8 @@ fn scan_height_side(
                 to: None,
                 compatiable_levels: vec![],
             });
+
+            *index = *index + 1;
 
             i += size;
         } else {
@@ -249,11 +255,12 @@ impl AvailableLevel {
 
 
         let mut connections= vec![];
-        scan_width_side(&mut connections, &available_level, &level_size, &grid, 0, Side::N);
-        scan_width_side(&mut connections, &available_level, &level_size, &grid, level_size.1 - 1, Side::S);
+        let mut index = 0;
+        scan_width_side(&mut connections, &mut index, &available_level, &level_size, &grid, 0, Side::N);
+        scan_width_side(&mut connections, &mut index, &available_level, &level_size, &grid, level_size.1 - 1, Side::S);
 
-        scan_height_side(&mut connections, &available_level, &level_size, &grid, 0, Side::W);
-        scan_height_side(&mut connections, &available_level, &level_size, &grid, level_size.0 - 1, Side::E);
+        scan_height_side(&mut connections, &mut index, &available_level, &level_size, &grid, 0, Side::W);
+        scan_height_side(&mut connections, &mut index, &available_level, &level_size, &grid, level_size.0 - 1, Side::E);
 
         available_level.connections = connections;
 
@@ -293,14 +300,14 @@ fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
 
                     if connection.are_matching(&other_connection) {
 
-                        if other_level.level_type != LevelType::Spawn {
+                        //if other_level.level_type != LevelType::Spawn {
                             to_add_elements.push((i, y, (available_levels[ii + i].clone(), yy)));
-                        }
+                        //}
 
                         // adding otherlevel to add to level
-                        if level.level_type != LevelType::Spawn {
+                        //if level.level_type != LevelType::Spawn {
                             to_add_elements.push((i + ii, yy, (available_levels[i].clone(), y)));
-                        }
+                        //}
                     }
 
                     yy += 1;
