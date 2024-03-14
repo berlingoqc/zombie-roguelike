@@ -1,12 +1,17 @@
-use crate::generation::{context::{MapGenerationContext, MapGenerationData, AvailableLevel, LevelType, Connection}, IMapGeneration, position::Position, Room};
+use std::rc::Rc;
 
-use rand::{Rng, seq::SliceRandom};
+use crate::generation::{context::{AvailableLevel, LevelType, MapGenerationContext, MapGenerationData}, position::Position, room::{ConnectionTo, RoomConnection}, IMapGeneration, Room};
+
+use rand::Rng;
 
 
+// private struct to store data during the map generation
 struct Map {
+    // index of the last room that we iterate on
     last_generated_room_index: Option<usize>,
+    // list of the room i have generated
     rooms: Vec<Room>,
-    // keep track of all room with availabe connections
+    // index of all the item in the rooms vector that still possively have open connection
     rooms_possible: Vec<usize>,
 }
 
@@ -28,61 +33,72 @@ impl BasicMapGeneration {
         }
     }
 
-
 }
 
 impl BasicMapGeneration {
 
-    fn get_next_room_recursize(&mut self) -> Option<(Room, Connection, Connection)> {
-        if self.map.rooms.len() > 15 {
+    fn get_next_room_recursize(&mut self) -> Option<(Room, RoomConnection, RoomConnection)> {
+
+        if self.context.config.max_room > 0 && self.map.rooms.len() >= self.context.config.max_room {
+            println!("max room stopping generation {} {}", self.map.rooms.len(),  self.context.config.max_room);
             return None;
         }
-        let room: Option<(Room, Connection, Connection)> = {
+
+
+        loop {
+
             if self.map.last_generated_room_index.is_none() {
+                println!("no room mark to continue generation");
                 return None;
             }
 
             let previous_room_index = self.map.last_generated_room_index.unwrap();
 
             let previous_room = self.map.rooms.get_mut(previous_room_index).unwrap();
+            let previous_room_def = previous_room.level_def.clone();
 
-            let previous_room_c1 = previous_room.clone();
-
-            let mut connections: Vec<&mut crate::generation::context::Connection> = previous_room.level.connections.iter_mut()
+            let free_connection_len = previous_room.connections.iter()
                 .filter(|i| i.to.is_none())
-                .collect();
+                .count();
 
-            let connection_len = connections.len();
-
-            if connection_len == 0 {
+            if free_connection_len == 0 {
                 if let Some(index) = self.map.rooms_possible.iter().position(|&x| x == previous_room_index) {
                     self.map.rooms_possible.remove(index);
                 }
 
                 if self.map.rooms_possible.len() == 0 {
+                    println!("no more room_possible stopping generation");
                     return None;
                 }
 
                 self.map.last_generated_room_index = self.map.rooms_possible.get(self.data.rng.gen_range(0..=(self.map.rooms_possible.len() - 1))).copied();
 
-                self.get_next_room_recursize()
+                continue;
             } else {
-                let connection = connections.iter_mut()
-                    .skip(self.data.rng.gen_range(0..=connection_len- 1))
-                    .last()
-                    .unwrap();
+
+                // get the connection def
+                let connection_def = {
+                    let connection = previous_room.connections.iter()
+                        .filter(|i| i.to.is_none())
+                        .skip(self.data.rng.gen_range(0..=free_connection_len- 1))
+                        .last()
+                        .unwrap();
+                    
+                    previous_room_def.connections.get(connection.index).unwrap()
+                };
 
 
-                if connection.compatiable_levels.len() == 0 {
-                    connection.to = Some(crate::generation::context::ConnectionTo::DeadEnd);
+                if connection_def.compatiable_levels.len() == 0 {
+                        
+                    previous_room.connections.get_mut(connection_def.index).unwrap().to = Some(ConnectionTo::DeadEnd);
                     println!("no compatible levels marking as DeadEnd");
-                    self.get_next_room_recursize()
+                    continue;
                 } else {
-                    // get a random level of type in the available
-                    connection.compatiable_levels.shuffle(&mut self.data.rng);
 
-                    let compatible_level = connection.compatiable_levels
+
+                    let compatible_level = connection_def.compatiable_levels
                         .iter()
+                        .skip(self.data.rng.gen_range(0..=connection_def.compatiable_levels.len() - 1))
                         .last()
                         .unwrap();
 
@@ -92,36 +108,30 @@ impl BasicMapGeneration {
 
                     let level_connection = compatible_level_def.connections.get( compatible_level.1).unwrap();
 
-                    let my_position = previous_room_c1.get_connecting_room_position(&connection, &compatible_level_def, compatible_level.1, &self.context.tile_size);
+                    let my_position = previous_room.get_connecting_room_position(
+                        &connection_def, &compatible_level_def, compatible_level.1,
+                        &self.context.tile_size
+                    );
+
                     let mut new_room = Room::create(compatible_level_def.clone(), my_position);
 
                     if new_room.is_outside(&self.context.config) {
-                        connection.to = Some(crate::generation::context::ConnectionTo::OutSide);
+                        previous_room.connections.get_mut(connection_def.index).unwrap().to = Some(ConnectionTo::OutSide);
 
-                        self.get_next_room_recursize()
-
+                        continue;
                     } else {
-                        new_room.set_connection_to(level_connection.index, &previous_room_c1.level, connection.index);
-                        connection.to = Some(crate::generation::context::ConnectionTo::Room((new_room.level.clone(), level_connection.index)));
 
-                        Some((new_room, level_connection.clone(),  connection.clone()))
+                        new_room.set_connection_between(level_connection.index, previous_room, connection_def.index);
+
+                        let new_room_level_connection = new_room.connections.get(level_connection.index).unwrap().clone();
+
+                        return Some((new_room, new_room_level_connection, previous_room.connections.get(connection_def.index).unwrap().clone()));
                     }
 
                 }
             }
-        };
-
-
-        if let Some(room) = room.as_ref() {
-            self.map.rooms.push(room.0.clone());
-            let index = self.map.rooms.len() - 1;
-            self.map.rooms_possible.push(index);
-            // if we switch index , if the current index one still has connection should be in rooms_possible if not present already
-            // self.map.last_generated_room_index = Some(index);
         }
-
-        room
-
+    
     }
     
 }
@@ -131,7 +141,7 @@ impl IMapGeneration for BasicMapGeneration {
     fn get_spawning_room(&mut self) -> Room {
 
 
-        let spawning_levels: Vec<&AvailableLevel> = self.context.available_levels.iter()
+        let spawning_levels: Vec<&Rc<AvailableLevel>> = self.context.available_levels.iter()
             .filter(|i| i.level_type == LevelType::Spawn)
             .collect();
 
@@ -158,7 +168,14 @@ impl IMapGeneration for BasicMapGeneration {
 
     }
 
-    fn get_next_room(&mut self) -> Option<(Room, Connection, Connection)> {
-        self.get_next_room_recursize()
+    fn get_next_room(&mut self) -> Option<(Room, RoomConnection, RoomConnection)> {
+        let room = self.get_next_room_recursize();
+        if let Some(room) = room.as_ref() {
+            self.map.rooms.push(room.0.clone());
+            let index = self.map.rooms.len() - 1;
+            self.map.rooms_possible.push(index);
+        }
+
+        room
     }
 }

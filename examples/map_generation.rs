@@ -1,5 +1,6 @@
 
 use bevy_ecs_ldtk::ldtk::LdtkJson;
+use map::ldtk::generation::{from_map, GeneratedMap};
 use serde_json::{from_str, to_string_pretty};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -44,8 +45,14 @@ fn main() {
     // Deserialize the JSON string into your data structure
     let data: LdtkJson = from_str(&contents).expect("Failed to deserialize JSON");
 
+    let config = MapGenerationConfig{seed, ..Default::default()};
+    let context = from_map(&data, config);
+    let mut generator = GeneratedMap::create(data);
 
-    let data: LdtkJson = map_generation(data.clone(), MapGenerationConfig{seed, ..Default::default()}).expect("Failed to generate map");
+
+    map_generation(context, &mut generator ).expect("Failed to generate map");
+
+    let data = generator.get_generated_map();
 
         // Convert JSON data to a pretty formatted string
     let pretty_json_string = to_string_pretty(&data).expect("Failed to serialize JSON");

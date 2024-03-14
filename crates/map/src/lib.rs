@@ -1,2 +1,2 @@
 pub mod generation;
-pub mod loader;
+pub mod ldtk;

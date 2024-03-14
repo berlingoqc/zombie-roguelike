@@ -8,6 +8,8 @@ use once_cell::sync::Lazy;
 use crate::generation::config::MapGenerationConfig;
 use crate::generation::map_generation;
 
+use super::generation::{from_map, GeneratedMap};
+
 
 static mut CONFIG: Lazy<MapGenerationConfig> = Lazy::new(|| {
     MapGenerationConfig::default()
@@ -31,9 +33,13 @@ pub fn get_asset_loader_generation() -> LdtkProjectLoader {
         callback: Some(Box::new(|map_json, config| {
             let config: MapGenerationConfig = serde_json::from_value(serde_json::Value::Object(config))
                     .expect("Failed to convert value to struct");
+            
+            let context = from_map(&map_json, config);
+            let mut generator = GeneratedMap::create(map_json);
 
+            map_generation(context, &mut generator).unwrap();
 
-            map_generation(map_json, config).unwrap()
+            generator.get_generated_map()
          })),
     }
 

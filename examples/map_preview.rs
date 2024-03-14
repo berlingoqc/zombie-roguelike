@@ -1,9 +1,9 @@
 
-use bevy::{prelude::*, utils::tracing::level_filters};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 use utils::camera::tod::{move_camera, setup_camera};
-use map::{generation::config::MapGenerationConfig, loader::{get_asset_loader_generation, reload_map, setup_generated_map}};
+use map::{generation::config::MapGenerationConfig, ldtk::loader::{get_asset_loader_generation, reload_map, setup_generated_map}};
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
