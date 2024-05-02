@@ -1,7 +1,7 @@
 [package]
 name = "zombie_alacod"
 description = "An ECS-friendly ldtk plugin for bevy."
-version = "0.8.0"
+version = "0.0.1"
 edition = "2021"
 exclude = ["assets/*", "repo/*", "scripts/*"]
 
