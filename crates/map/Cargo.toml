@@ -6,8 +6,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "*"
-#bevy_ecs_ldtk = { git = "https://github.com/berlingoqc/bevy_ecs_ldtk", branch = "transform_ldtk_project", default-features = true }
-bevy_ecs_ldtk = { path = "../../../bevy_ecs_ldtk", default-features = true }
+bevy_ecs_ldtk = { version = "*", default-features = true }
 
 
 rand = "0.8.5"
