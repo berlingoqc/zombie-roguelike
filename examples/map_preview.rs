@@ -19,7 +19,7 @@ fn main() {
     let map_generation_config = get_config();
     let window_plugin = WindowPlugin {
         primary_window: Some(Window {
-            title: "Zombie".to_string(),
+            title: "Zombie RogueLike".to_string(),
             resolution: WindowResolution::new(800., 600.),
             
             resizable: true,
