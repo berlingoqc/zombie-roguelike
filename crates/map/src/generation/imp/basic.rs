@@ -190,7 +190,7 @@ impl IMapGeneration for BasicMapGeneration {
                         cost: 100,
                         electrify: false
                     }
-                }).collect()
+                }).collect::<Vec<crate::generation::entity::door::DoorConfig>>()
             }).collect()
     }
 

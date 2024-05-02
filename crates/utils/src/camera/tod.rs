@@ -1,16 +1,17 @@
 use bevy::prelude::*;
+use bevy::input::ButtonInput;
 
 pub fn move_camera(
     mut players: Query<&mut Transform, With<Camera2d>>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
 ) {
-    let movement_direction = if input.pressed(KeyCode::W) {
+    let movement_direction = if input.pressed(KeyCode::KeyW) {
         (0, 1)
-    } else if input.pressed(KeyCode::A) {
+    } else if input.pressed(KeyCode::KeyA) {
         (-1, 0)
-    } else if input.pressed(KeyCode::S) {
+    } else if input.pressed(KeyCode::KeyS) {
         (0, -1)
-    } else if input.pressed(KeyCode::D) {
+    } else if input.pressed(KeyCode::KeyD) {
         (1, 0)
     } else {
         return;

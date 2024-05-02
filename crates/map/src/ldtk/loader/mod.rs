@@ -17,12 +17,12 @@ static mut CONFIG: Lazy<MapGenerationConfig> = Lazy::new(|| {
 
 fn set_global_config(config: &MapGenerationConfig) {
     unsafe {
-        let rf = Lazy::force_mut(&mut CONFIG);
-        rf.seed = config.seed;
-        rf.max_width = config.max_width;
-        rf.max_heigth = config.max_heigth;
-        rf.mode = config.mode;
-        rf.map_path = config.map_path.clone();
+        //let rf = Lazy::force_mut(&mut CONFIG);
+        CONFIG.seed = config.seed;
+        CONFIG.max_width = config.max_width;
+        CONFIG.max_heigth = config.max_heigth;
+        CONFIG.mode = config.mode;
+        CONFIG.map_path = config.map_path.clone();
     }
 }
 

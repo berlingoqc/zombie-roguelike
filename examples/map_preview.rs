@@ -75,14 +75,14 @@ fn load_levels_if_not_present(
 }
 
 fn keyinput(
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     level_query: Query<Entity, With<LevelIid>>,
     mut commands: Commands, asset_server: Res<AssetServer>,
     mut config: ResMut<MapGenerationConfig>,
     mut level_set: Query<&mut LevelSet>,
 ) {
 
-    if input.just_pressed(KeyCode::R) {
+    if input.just_pressed(KeyCode::KeyR) {
         for level_entity in &level_query {
             commands.entity(level_entity).despawn_recursive()
         }
