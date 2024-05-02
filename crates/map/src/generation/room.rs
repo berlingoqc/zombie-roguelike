@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use bevy::utils::Uuid;
 
-use super::{config::MapGenerationConfig, context::{AvailableLevel, Connection, Side}, position::Position};
+use super::{config::MapGenerationConfig, context::{AvailableLevel, Connection, Side}, entity::location::EntityLocations, position::Position};
 
 #[derive(Debug, Clone)]
 pub enum ConnectionTo {
@@ -25,10 +25,11 @@ pub struct RoomConnection{
 pub struct Room{
     pub level_iid: String,
     pub position: Position,
-
     pub connections: Vec<RoomConnection>,
+    pub entity_locations: EntityLocations,
 
     pub level_def: Rc<AvailableLevel>,
+
 }
 
 impl Room {
@@ -40,7 +41,7 @@ impl Room {
             .map(|x| RoomConnection{index: x.index, to: None, level_id: x.level_id.clone(), level_iid: level_iid.clone(), side: x.side, })
             .collect();
 
-        Self { level_iid, level_def: level, position: position, connections }
+        Self { level_iid, position: position, entity_locations: level.entity_locations.clone(), connections, level_def: level, }
     }
 
     fn set_connection(&mut self, my_connection_index: usize, their_room: &mut Room, their_connection_index: usize) {

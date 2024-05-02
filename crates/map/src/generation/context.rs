@@ -1,5 +1,5 @@
 
-use super::config::MapGenerationConfig;
+use super::{config::MapGenerationConfig, entity::location::EntityLocations};
 
 use std::{fmt::Display, rc::Rc, usize};
 
@@ -14,6 +14,7 @@ pub enum Side {
 }
 
 impl Side {
+
 
     pub fn get_opposite(&self) -> Self {
         match self {
@@ -103,6 +104,8 @@ pub struct AvailableLevel {
     pub level_type: LevelType,
 
     pub connections: Vec<Connection>,
+
+    pub entity_locations: EntityLocations
 }
 
 pub type AvailableLevels = Vec<Rc<AvailableLevel>>;

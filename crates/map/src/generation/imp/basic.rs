@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::generation::{context::{AvailableLevel, LevelType, MapGenerationContext, MapGenerationData}, position::Position, room::{ConnectionTo, RoomConnection}, IMapGeneration, Room};
+use crate::generation::{context::{AvailableLevel, LevelType, MapGenerationContext, MapGenerationData}, entity::{door::DoorConfig, window::WindowConfig}, position::Position, room::{ConnectionTo, RoomConnection}, IMapGeneration, Room};
 
 use rand::Rng;
 
@@ -24,7 +24,6 @@ pub struct BasicMapGeneration {
 }
 
 impl BasicMapGeneration {
-
     pub fn create(context: MapGenerationContext) -> Self {
         BasicMapGeneration {
             data: MapGenerationData::from_context(&context),
@@ -32,7 +31,6 @@ impl BasicMapGeneration {
             map: Map { last_generated_room_index: None, rooms: vec![], rooms_possible: vec![] }
         }
     }
-
 }
 
 impl BasicMapGeneration {
@@ -178,4 +176,28 @@ impl IMapGeneration for BasicMapGeneration {
 
         room
     }
+
+    fn get_doors(&mut self) -> Vec<crate::generation::entity::door::DoorConfig> {
+        // get all my level , get all the doors in each level
+        self.map.rooms.iter()
+            .flat_map(|x| {
+                x.entity_locations.doors.iter().map(|y| {
+                    DoorConfig{
+                        position: Position(0, 0),
+                        size: (0,0),
+                        level_iid: x.level_iid.clone(),
+                        connection: ConnectionTo::DeadEnd,
+                        cost: 100,
+                        electrify: false
+                    }
+                }).collect()
+            }).collect()
+    }
+
+    fn get_windows(&mut self) -> Vec<crate::generation::entity::window::WindowConfig> {
+
+        vec![]
+    }
+
+
 }

@@ -1,5 +1,5 @@
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct Position(pub i32,pub i32);
 
 impl std::fmt::Display for Position {
