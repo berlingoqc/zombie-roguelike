@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "*"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_error_panic_hook = "0.1.6"
+web-sys = "0.3.57"

@@ -2,7 +2,12 @@ use std::rc::Rc;
 
 use bevy::utils::Uuid;
 
-use super::{config::MapGenerationConfig, context::{AvailableLevel, Connection, Side}, entity::location::EntityLocations, position::Position};
+use super::{
+    config::MapGenerationConfig,
+    context::{AvailableLevel, Connection, Side},
+    entity::location::EntityLocations,
+    position::Position,
+};
 
 #[derive(Debug, Clone)]
 pub enum ConnectionTo {
@@ -10,10 +15,9 @@ pub enum ConnectionTo {
     DeadEnd,
     OutSide,
 }
- 
 
 #[derive(Debug, Clone)]
-pub struct RoomConnection{
+pub struct RoomConnection {
     pub index: usize,
     pub level_iid: String,
     pub level_id: String,
@@ -22,44 +26,68 @@ pub struct RoomConnection{
 }
 
 #[derive(Debug, Clone)]
-pub struct Room{
+pub struct Room {
     pub level_iid: String,
     pub position: Position,
     pub connections: Vec<RoomConnection>,
     pub entity_locations: EntityLocations,
 
     pub level_def: Rc<AvailableLevel>,
-
 }
 
 impl Room {
     pub fn create(level: Rc<AvailableLevel>, position: Position) -> Self {
-
         let level_iid: String = Uuid::new_v4().into();
 
-        let connections: Vec<_> = level.connections.iter()
-            .map(|x| RoomConnection{index: x.index, to: None, level_id: x.level_id.clone(), level_iid: level_iid.clone(), side: x.side, })
+        let connections: Vec<_> = level
+            .connections
+            .iter()
+            .map(|x| RoomConnection {
+                index: x.index,
+                to: None,
+                level_id: x.level_id.clone(),
+                level_iid: level_iid.clone(),
+                side: x.side,
+            })
             .collect();
 
-        Self { level_iid, position: position, entity_locations: level.entity_locations.clone(), connections, level_def: level, }
+        Self {
+            level_iid,
+            position: position,
+            entity_locations: level.entity_locations.clone(),
+            connections,
+            level_def: level,
+        }
     }
 
-    fn set_connection(&mut self, my_connection_index: usize, their_room: &mut Room, their_connection_index: usize) {
+    fn set_connection(
+        &mut self,
+        my_connection_index: usize,
+        their_room: &mut Room,
+        their_connection_index: usize,
+    ) {
         let my_connection = self.connections.get_mut(my_connection_index).unwrap();
         if my_connection.to.is_some() {
             panic!("connection is already used");
         }
-        my_connection.to = Some(ConnectionTo::Room((their_room.level_iid.clone(), their_connection_index)));
+        my_connection.to = Some(ConnectionTo::Room((
+            their_room.level_iid.clone(),
+            their_connection_index,
+        )));
     }
 
-    pub fn set_connection_between(&mut self, my_connection_index: usize, their_room: &mut Room, their_connection_index: usize) {
+    pub fn set_connection_between(
+        &mut self,
+        my_connection_index: usize,
+        their_room: &mut Room,
+        their_connection_index: usize,
+    ) {
         // throw if one is already link
         self.set_connection(my_connection_index, their_room, their_connection_index);
         their_room.set_connection(their_connection_index, self, my_connection_index);
     }
 
     pub fn is_overlapping(&self, other: &Room) -> bool {
-
         // find if we are overlapping
         let left_of_other = self.position.0 + self.level_def.level_size_p.0 < other.position.0;
         let left_of_self = other.position.0 + other.level_def.level_size_p.0 < self.position.0;
@@ -74,20 +102,19 @@ impl Room {
 
     // check if top-left corner is outside or not
     pub fn is_outside(&self, config: &MapGenerationConfig) -> bool {
-
         let position = &self.position;
 
-
-        (position.0 > config.max_width || position.0 < (config.max_width * -1)) ||
-        (position.1 > config.max_heigth || position.1 < (config.max_heigth * -1))
+        (position.0 > config.max_width || position.0 < (config.max_width * -1))
+            || (position.1 > config.max_heigth || position.1 < (config.max_heigth * -1))
     }
 
-
     pub fn get_connecting_room_position(
-        &self, my_connection: &Connection, their_level: &AvailableLevel, their_connection: usize,
+        &self,
+        my_connection: &Connection,
+        their_level: &AvailableLevel,
+        their_connection: usize,
         tile_size: &(i32, i32),
     ) -> Position {
-
         let my_position = &self.position;
 
         let their_connection = their_level.connections.get(their_connection).unwrap();
@@ -101,25 +128,19 @@ impl Room {
 
                 Position(
                     my_position.0 + (their_connection.side.get_factor() * (offset_pixel)),
-                    my_position.1 + (their_connection.side.get_factor() * -1 * their_level.level_size_p.1),
+                    my_position.1
+                        + (their_connection.side.get_factor() * -1 * their_level.level_size_p.1),
                 )
-            },
+            }
             Side::W | Side::E => {
                 let offset_pixel = (offset as i32) * tile_size.1;
 
                 Position(
-                    my_position.0 + (their_connection.side.get_factor() * -1 * their_level.level_size_p.0),
+                    my_position.0
+                        + (their_connection.side.get_factor() * -1 * their_level.level_size_p.0),
                     my_position.1 + (their_connection.side.get_factor() * (offset_pixel)),
                 )
             }
         }
-
-
     }
-    
 }
-
-
-
-
-

@@ -1,8 +1,7 @@
-
 use std::ops::RangeInclusive;
 
 use bevy::prelude::Resource;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum MapGenerationMode {
@@ -11,7 +10,6 @@ pub enum MapGenerationMode {
 
 #[derive(Debug, Resource, Serialize, Deserialize)]
 pub struct MapGenerationConfig {
-
     pub map_path: String,
 
     pub seed: i32,
@@ -26,17 +24,16 @@ pub struct MapGenerationConfig {
 
 impl Default for MapGenerationConfig {
     fn default() -> Self {
-        Self { 
+        Self {
             seed: 1,
             max_width: 1000,
             max_heigth: 1000,
             map_path: "".into(),
             max_room: 10,
-            mode: MapGenerationMode::Basic
+            mode: MapGenerationMode::Basic,
         }
     }
 }
-
 
 impl MapGenerationConfig {
     pub fn get_range_x(&self, my_size: i32) -> RangeInclusive<i32> {
@@ -46,5 +43,4 @@ impl MapGenerationConfig {
     pub fn get_range_y(&self, my_size: i32) -> RangeInclusive<i32> {
         -self.max_heigth..=(self.max_heigth - my_size)
     }
-    
 }

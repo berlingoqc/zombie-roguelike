@@ -1,0 +1,51 @@
+name: Publish to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v1
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache cargo build
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+      #- uses: actions-rs/toolchain@v1
+      #  with:
+      #    toolchain: nightly-2022-04-13
+      #    override: true
+      - name: Generate website
+        run: ./build install_web_dependency && ./build build_web_release
+      - name: Publish generated content to GitHub Pages
+        uses: tsunematsu21/actions-publish-gh-pages@v1.0.2
+        with:
+          dir: website/
+          branch: gh-pages
+          token: ${{ secrets.ACCESS_TOKEN }}
+  #release_dev:
+  #  runs-on: macos-latest
+  #  steps:
+  #  - uses: actions/checkout@v2
+  #  - name: rustup
+  #    run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && rustup default nightly-2022-04-13 && cargo install --force cargo-make && cd game && cargo make build-native
+  #  - name: Create release folder
+  #    run: mkdir -p release && cp ./game/target/debug/cod-zombie-2d-clone ./release
+  #  - uses: "marvinpinto/action-automatic-releases@latest"
+  #    with:
+  #      repo_token: "${{ secrets.GITHUB_TOKEN }}"
+  #      automatic_release_tag: "latest"
+  #      prerelease: true
+  #      title: "Development Build macos"
+  #      files: |
+  #        ./release/*

@@ -1,82 +1,153 @@
 use std::rc::Rc;
 
-use bevy::{math::{IVec2, Vec2}, utils::Uuid};
-use bevy_ecs_ldtk::{ldtk::{FieldInstance, FieldValue, LayerInstance, LdtkJson, Level, NeighbourLevel}, EntityInstance};
+use bevy::{
+    math::{IVec2, Vec2},
+    utils::Uuid,
+};
+use bevy_ecs_ldtk::{
+    ldtk::{FieldInstance, FieldValue, LayerInstance, LdtkJson, Level, NeighbourLevel},
+    EntityInstance,
+};
 
-use crate::generation::{config::MapGenerationConfig, position::Position, context::{populate_level_connections, scan_height_side, scan_width_side, AvailableLevel, LevelType, MapGenerationContext, Side}, entity::location::{EntityLocation, EntityLocations, MultiTileEntityLocation}, room::{Room, RoomConnection}, IMapGenerator};
+use crate::generation::{
+    config::MapGenerationConfig,
+    context::{
+        populate_level_connections, scan_height_side, scan_width_side, AvailableLevel, LevelType,
+        MapGenerationContext, Side,
+    },
+    entity::location::{EntityLocation, EntityLocations, MultiTileEntityLocation},
+    position::Position,
+    room::{Room, RoomConnection},
+    IMapGenerator,
+};
 
 use super::map_const::{self, LAYER_ENTITY};
 
 fn get_level_field(level: &Level, name: &str) -> Option<FieldValue> {
-    level.field_instances.iter()
+    level
+        .field_instances
+        .iter()
         .find(|instance| name == instance.identifier)
         .map(|instance| instance.value.clone())
 }
 
-
 macro_rules! get_entities {
     ($self: expr, $identifier: expr, $type: ident) => {
-        $self.iter().filter(|x| x.identifier == $identifier).map(|x| {
-            let position = Position(x.grid.x, x.grid.y);
-            $type{
-                position: position,
-            }
-        }).collect()
+        $self
+            .iter()
+            .filter(|x| x.identifier == $identifier)
+            .map(|x| {
+                let position = Position(x.grid.x, x.grid.y);
+                $type { position: position }
+            })
+            .collect()
     };
 }
 
 macro_rules! get_wall_entities {
     ($self: expr, $tile_size: expr, $identifier: expr, $type: ident) => {
-        $self.iter().filter(|x| x.identifier == $identifier).map(|x| {
-            let position = Position(x.grid.x, x.grid.y);
-            $type{
-                size: (x.width / $tile_size.0, x.height / $tile_size.1),
-                position: position,
-            }
-        }).collect()
+        $self
+            .iter()
+            .filter(|x| x.identifier == $identifier)
+            .map(|x| {
+                let position = Position(x.grid.x, x.grid.y);
+                $type {
+                    size: (x.width / $tile_size.0, x.height / $tile_size.1),
+                    position: position,
+                }
+            })
+            .collect()
     };
 }
 
-
 fn extract_entity_locations(level: &Level, tile_size: &(i32, i32)) -> EntityLocations {
-
-    let entity_layer = level.layer_instances.as_ref().unwrap().iter()
+    let entity_layer = level
+        .layer_instances
+        .as_ref()
+        .unwrap()
+        .iter()
         .find(|x| x.identifier == map_const::LAYER_ENTITY);
 
     if let Some(entity_layer) = entity_layer {
         EntityLocations {
-            doors: get_wall_entities!(entity_layer.entity_instances, tile_size, map_const::ENTITY_WINDOW_LOCATION, MultiTileEntityLocation),
-            sodas: get_entities!(entity_layer.entity_instances, map_const::ENTITY_SODA_LOCATION, EntityLocation),
-            player_spawns: get_entities!(entity_layer.entity_instances, map_const::ENTITY_PLAYER_SPAWN_LOCATION, EntityLocation), 
-            zombie_spawns: get_entities!(entity_layer.entity_instances, map_const::ENTITY_ZOMBIE_SPAWN_LOCATION, EntityLocation),
-            weapon_crates: get_entities!(entity_layer.entity_instances, map_const::ENTITY_WEAPON_LOCATION, EntityLocation),
-            weapons: get_entities!(entity_layer.entity_instances, map_const::ENTITY_WEAPON_LOCATION, EntityLocation),
-            windows: get_wall_entities!(entity_layer.entity_instances, tile_size, map_const::ENTITY_WINDOW_LOCATION, MultiTileEntityLocation)
+            doors: get_wall_entities!(
+                entity_layer.entity_instances,
+                tile_size,
+                map_const::ENTITY_WINDOW_LOCATION,
+                MultiTileEntityLocation
+            ),
+            sodas: get_entities!(
+                entity_layer.entity_instances,
+                map_const::ENTITY_SODA_LOCATION,
+                EntityLocation
+            ),
+            player_spawns: get_entities!(
+                entity_layer.entity_instances,
+                map_const::ENTITY_PLAYER_SPAWN_LOCATION,
+                EntityLocation
+            ),
+            zombie_spawns: get_entities!(
+                entity_layer.entity_instances,
+                map_const::ENTITY_ZOMBIE_SPAWN_LOCATION,
+                EntityLocation
+            ),
+            weapon_crates: get_entities!(
+                entity_layer.entity_instances,
+                map_const::ENTITY_WEAPON_LOCATION,
+                EntityLocation
+            ),
+            weapons: get_entities!(
+                entity_layer.entity_instances,
+                map_const::ENTITY_WEAPON_LOCATION,
+                EntityLocation
+            ),
+            windows: get_wall_entities!(
+                entity_layer.entity_instances,
+                tile_size,
+                map_const::ENTITY_WINDOW_LOCATION,
+                MultiTileEntityLocation
+            ),
         }
     } else {
-        EntityLocations { doors: vec![], sodas: vec![], player_spawns: vec![], zombie_spawns: vec![], weapon_crates: vec![], weapons: vec![], windows: vec![] }
+        EntityLocations {
+            doors: vec![],
+            sodas: vec![],
+            player_spawns: vec![],
+            zombie_spawns: vec![],
+            weapon_crates: vec![],
+            weapons: vec![],
+            windows: vec![],
+        }
     }
 }
-
 
 fn to_available_level(level: &Level, tile_size: &(i32, i32)) -> AvailableLevel {
     let level_size: (usize, usize) = (
         (level.px_wid / tile_size.0) as usize,
-        (level.px_hei / tile_size.1) as usize
+        (level.px_hei / tile_size.1) as usize,
     );
 
     // identify each level connection
-    let connection_layer: &LayerInstance = level.layer_instances.as_ref().map(|layer_instance| {
-        layer_instance.into_iter()
-            .find(|item| map_const::LAYER_CONNECTION == item.identifier)
-            .ok_or_else(|| "Failed to find LevelConnetion Layer on level")
-    }).unwrap_or_else(|| Err("No Layers present")).unwrap();
+    let connection_layer: &LayerInstance = level
+        .layer_instances
+        .as_ref()
+        .map(|layer_instance| {
+            layer_instance
+                .into_iter()
+                .find(|item| map_const::LAYER_CONNECTION == item.identifier)
+                .ok_or_else(|| "Failed to find LevelConnetion Layer on level")
+        })
+        .unwrap_or_else(|| Err("No Layers present"))
+        .unwrap();
 
-    let grid: Vec<&[i32]> = connection_layer.int_grid_csv.chunks(level_size.0 as usize).collect();
+    let grid: Vec<&[i32]> = connection_layer
+        .int_grid_csv
+        .chunks(level_size.0 as usize)
+        .collect();
 
     let level_type = {
         let is_spawn = get_level_field(&level, map_const::LEVEL_FIELD_SPAWN).map_or(false, |x| {
-            if let FieldValue::Bool(value) =x {
+            if let FieldValue::Bool(value) = x {
                 value
             } else {
                 false
@@ -90,47 +161,80 @@ fn to_available_level(level: &Level, tile_size: &(i32, i32)) -> AvailableLevel {
         }
     };
 
-
     // get my entity layer from the level and extract all entity
 
-
-
-    let mut available_level = AvailableLevel { 
+    let mut available_level = AvailableLevel {
         level_id: level.identifier.clone(),
         connections: vec![],
         level_size,
-        level_size_p: (level_size.0 as i32 * tile_size.0, level_size.1 as i32 * tile_size.1),
+        level_size_p: (
+            level_size.0 as i32 * tile_size.0,
+            level_size.1 as i32 * tile_size.1,
+        ),
         level_type,
         entity_locations: extract_entity_locations(level, tile_size),
     };
 
-
-    let mut connections= vec![];
+    let mut connections = vec![];
     let mut index = 0;
-    scan_width_side(&mut connections, &mut index, &available_level, &level_size, &grid, 0, Side::N);
-    scan_width_side(&mut connections, &mut index, &available_level, &level_size, &grid, level_size.1 - 1, Side::S);
+    scan_width_side(
+        &mut connections,
+        &mut index,
+        &available_level,
+        &level_size,
+        &grid,
+        0,
+        Side::N,
+    );
+    scan_width_side(
+        &mut connections,
+        &mut index,
+        &available_level,
+        &level_size,
+        &grid,
+        level_size.1 - 1,
+        Side::S,
+    );
 
-    scan_height_side(&mut connections, &mut index, &available_level, &level_size, &grid, 0, Side::W);
-    scan_height_side(&mut connections, &mut index, &available_level, &level_size, &grid, level_size.0 - 1, Side::E);
+    scan_height_side(
+        &mut connections,
+        &mut index,
+        &available_level,
+        &level_size,
+        &grid,
+        0,
+        Side::W,
+    );
+    scan_height_side(
+        &mut connections,
+        &mut index,
+        &available_level,
+        &level_size,
+        &grid,
+        level_size.0 - 1,
+        Side::E,
+    );
 
     available_level.connections = connections;
 
     available_level
 }
 
-
 pub fn from_map(map_json: &LdtkJson, config: MapGenerationConfig) -> MapGenerationContext {
     if map_json.levels.len() < 1 {
         eprintln!("to few level present in the project");
     }
 
-    let tile_size = (map_json.default_entity_width, map_json.default_entity_height);
+    let tile_size = (
+        map_json.default_entity_width,
+        map_json.default_entity_height,
+    );
 
     let first_level = map_json.levels.get(0).unwrap();
 
     let level_size = (
         first_level.px_wid / tile_size.0,
-        first_level.px_hei / tile_size.1
+        first_level.px_hei / tile_size.1,
     );
 
     println!("starting level generation with config \nseed={} \ntilse_size={}x{} \nlevel_size={}x{}\nmap_size={}x{}", 
@@ -138,16 +242,16 @@ pub fn from_map(map_json: &LdtkJson, config: MapGenerationConfig) -> MapGenerati
         config.max_width, config.max_heigth
     );
 
-    let mut available_levels: Vec<AvailableLevel> = map_json.levels.iter()
-        .map(|item| {
-            to_available_level(&item, &tile_size)
-        }).collect();
-
+    let mut available_levels: Vec<AvailableLevel> = map_json
+        .levels
+        .iter()
+        .map(|item| to_available_level(&item, &tile_size))
+        .collect();
 
     populate_level_connections(&mut available_levels);
 
-
-    let available_levels = available_levels.iter()
+    let available_levels = available_levels
+        .iter()
         .map(|x| Rc::new(x.clone()))
         .collect();
 
@@ -159,20 +263,17 @@ pub fn from_map(map_json: &LdtkJson, config: MapGenerationConfig) -> MapGenerati
     }
 }
 
-
-
-
 #[derive(Debug, Clone)]
 pub struct GeneratedRoom {
     level: Level,
     ldtk: Rc<LdtkJson>,
 }
 
-
 impl GeneratedRoom {
-
     pub fn create(ldtk_json: Rc<LdtkJson>, room: &Room) -> Self {
-        let mut level = ldtk_json.levels.iter()
+        let mut level = ldtk_json
+            .levels
+            .iter()
             .find(|item| item.identifier == room.level_def.level_id)
             .expect("failed to find level from original")
             .clone();
@@ -182,75 +283,84 @@ impl GeneratedRoom {
         level.world_x = room.position.0;
         level.world_y = room.position.1;
         level.neighbours.clear();
-        level.layer_instances.as_mut().unwrap()
-            .iter_mut().find(|x| x.identifier == LAYER_ENTITY)
-            .unwrap().entity_instances.clear();
+        level
+            .layer_instances
+            .as_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|x| x.identifier == LAYER_ENTITY)
+            .unwrap()
+            .entity_instances
+            .clear();
 
-        GeneratedRoom{
+        GeneratedRoom {
             level,
             ldtk: ldtk_json,
         }
     }
-    
 }
-
-
 
 pub struct GeneratedMap {
     ldtk_json: Rc<LdtkJson>,
     generated_rooms: Vec<GeneratedRoom>,
 }
 pub fn get_new_entity(
-        room: &GeneratedRoom,
-        original_entity_identifier: &str,
-        grid_position: Position,
-        size: (i32, i32),
-        tile_size: (i32, i32),
-        // identifier and value
-        fields: Vec<(String, FieldValue)>
+    room: &GeneratedRoom,
+    original_entity_identifier: &str,
+    grid_position: Position,
+    size: (i32, i32),
+    tile_size: (i32, i32),
+    // identifier and value
+    fields: Vec<(String, FieldValue)>,
 ) -> EntityInstance {
+    let entity = room
+        .ldtk
+        .defs
+        .entities
+        .iter()
+        .find(|x| x.identifier == original_entity_identifier)
+        .unwrap();
 
-        let entity = room.ldtk.defs.entities.iter()
-            .find(|x| x.identifier == original_entity_identifier)
-            .unwrap();
+    let px = (grid_position.0 * tile_size.0, grid_position.1 * tile_size.1);
+    let world_px = (px.0 + room.level.world_x, px.1 + room.level.world_y);
 
-        let px = (grid_position.0 * tile_size.0, grid_position.1 * tile_size.1);
-        let world_px = (px.0 + room.level.world_x, px.1 + room.level.world_y);
-
-        let identifiers = fields.iter().map(|x| {
-
-            let field = entity.field_defs.iter()
+    let identifiers = fields
+        .iter()
+        .map(|x| {
+            let field = entity
+                .field_defs
+                .iter()
                 .find(|fd| fd.identifier == x.0)
                 .unwrap();
 
-            FieldInstance{
+            FieldInstance {
                 identifier: field.identifier.clone(),
                 def_uid: field.uid,
                 field_instance_type: field.field_definition_type.clone(),
                 value: x.1.clone(),
                 tile: None,
-                real_editor_values: vec![]
+                real_editor_values: vec![],
             }
-        }).collect();
+        })
+        .collect();
 
-        EntityInstance {
-            identifier: original_entity_identifier.into(),
-            def_uid: entity.uid,
-            grid: IVec2::new(grid_position.0, grid_position.1),
-            pivot: Vec2::new(entity.pivot_x, entity.pivot_y),
-            tags: vec![],
-            tile: None,
-            smart_color: entity.color,
-            iid: Uuid::new_v4().to_string(),
-            width: size.0,
-            height: size.1,
-            field_instances: identifiers,
-            px: IVec2::new(px.0, px.1),
-            world_x: Some(world_px.0),
-            world_y: Some(world_px.1),
-        }
+    EntityInstance {
+        identifier: original_entity_identifier.into(),
+        def_uid: entity.uid,
+        grid: IVec2::new(grid_position.0, grid_position.1),
+        pivot: Vec2::new(entity.pivot_x, entity.pivot_y),
+        tags: vec![],
+        tile: None,
+        smart_color: entity.color,
+        iid: Uuid::new_v4().to_string(),
+        width: size.0,
+        height: size.1,
+        field_instances: identifiers,
+        px: IVec2::new(px.0, px.1),
+        world_x: Some(world_px.0),
+        world_y: Some(world_px.1),
+    }
 }
-
 
 impl GeneratedMap {
     pub fn create(ldtk_json: LdtkJson) -> Self {
@@ -260,40 +370,51 @@ impl GeneratedMap {
         }
     }
 
-
     pub fn get_generated_map(&self) -> LdtkJson {
         let mut new_map: LdtkJson = (*self.ldtk_json).clone();
 
-        new_map.levels = self.generated_rooms.iter().enumerate().map(|(i,x)| {
-            let mut r = x.level.clone();
-            r.identifier = format!("Level_{}", i);
-            r
-        }).collect();
-
+        new_map.levels = self
+            .generated_rooms
+            .iter()
+            .enumerate()
+            .map(|(i, x)| {
+                let mut r = x.level.clone();
+                r.identifier = format!("Level_{}", i);
+                r
+            })
+            .collect();
 
         new_map
     }
-
 }
 
 impl IMapGenerator for GeneratedMap {
-    fn add_room(&mut self, room: &Room, connection_used: Option<&RoomConnection>, connected_to: Option<&RoomConnection>) {
+    fn add_room(
+        &mut self,
+        room: &Room,
+        connection_used: Option<&RoomConnection>,
+        connected_to: Option<&RoomConnection>,
+    ) {
         let mut generated_room = GeneratedRoom::create(self.ldtk_json.clone(), room);
 
-        println!("adding room id={} type={:?} from_level={} position={}", room.level_iid, room.level_def.level_type, room.level_def.level_id, room.position);
+        println!(
+            "adding room id={} type={:?} from_level={} position={}",
+            room.level_iid, room.level_def.level_type, room.level_def.level_id, room.position
+        );
 
         if let Some(connected_to) = connected_to {
-
             let connection_used = connection_used.unwrap();
 
-            generated_room.level.neighbours.push(NeighbourLevel{
+            generated_room.level.neighbours.push(NeighbourLevel {
                 level_iid: connected_to.level_iid.clone(),
                 dir: connection_used.side.to_dir_str().into(),
                 ..Default::default()
             });
 
             // find the other room and me as it's neighbours
-            let linked_room = self.generated_rooms.iter_mut()
+            let linked_room = self
+                .generated_rooms
+                .iter_mut()
                 .find(|r| r.level.iid == connected_to.level_iid)
                 .unwrap();
 
@@ -301,45 +422,51 @@ impl IMapGenerator for GeneratedMap {
                connection_used.side, connection_used.index, connected_to.side, connected_to.index, connected_to.level_iid,
                connected_to.level_id, linked_room.level.world_x, linked_room.level.world_y,
             );
-            
-            linked_room.level.neighbours.push(NeighbourLevel { 
+
+            linked_room.level.neighbours.push(NeighbourLevel {
                 dir: connected_to.side.to_dir_str().into(),
                 level_iid: room.level_iid.clone(),
                 ..Default::default()
             })
-
         }
 
         println!("");
 
         self.generated_rooms.push(generated_room);
-
     }
 
     fn add_doors(&mut self, doors: &Vec<crate::generation::entity::door::DoorConfig>) {
         for door in doors.iter() {
-
-            let level = self.generated_rooms.iter_mut()
+            let level = self
+                .generated_rooms
+                .iter_mut()
                 .find(|x| x.level.iid == door.level_iid)
                 .unwrap();
 
             let new_entity = get_new_entity(
-                &level, 
-                map_const::ENTITY_DOOR_LOCATION, 
+                &level,
+                map_const::ENTITY_DOOR_LOCATION,
                 door.position,
                 door.size,
-                (self.ldtk_json.default_entity_width, self.ldtk_json.default_entity_height),
-                vec![]
+                (
+                    self.ldtk_json.default_entity_width,
+                    self.ldtk_json.default_entity_height,
+                ),
+                vec![],
             );
 
-            level.level.layer_instances.as_mut().unwrap().iter_mut()
+            level
+                .level
+                .layer_instances
+                .as_mut()
+                .unwrap()
+                .iter_mut()
                 .find(|x| x.identifier == map_const::LAYER_ENTITY)
                 .unwrap()
-                .entity_instances.push(new_entity);
+                .entity_instances
+                .push(new_entity);
         }
     }
 
-    fn add_windows(&mut self, windows: &Vec<crate::generation::entity::window::WindowConfig>) {
-        
-    }
+    fn add_windows(&mut self, windows: &Vec<crate::generation::entity::window::WindowConfig>) {}
 }

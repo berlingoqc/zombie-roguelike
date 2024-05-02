@@ -1,4 +1,3 @@
-
 use super::{config::MapGenerationConfig, entity::location::EntityLocations};
 
 use std::{fmt::Display, rc::Rc, usize};
@@ -7,21 +6,19 @@ use std::{fmt::Display, rc::Rc, usize};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Side {
-   N,
-   S,
-   W,
-   E,
+    N,
+    S,
+    W,
+    E,
 }
 
 impl Side {
-
-
     pub fn get_opposite(&self) -> Self {
         match self {
             Side::N => Side::S,
             Side::S => Side::N,
             Side::W => Side::E,
-            Side::E => Side::W
+            Side::E => Side::W,
         }
     }
 
@@ -30,7 +27,7 @@ impl Side {
             Side::N => "n",
             Side::E => "e",
             Side::S => "s",
-            Side::W => "w"
+            Side::W => "w",
         }
     }
 
@@ -38,16 +35,13 @@ impl Side {
         match self {
             Side::N | Side::W => -1,
             Side::S | Side::E => 1,
-            
         }
     }
 
     pub fn is_opposite(&self, other: Side) -> bool {
         other == self.get_opposite()
     }
-    
 }
-
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum LevelType {
@@ -61,31 +55,30 @@ pub struct Connection {
     pub size: usize,
     pub side: Side,
     pub starting_at: usize,
-    
+
     //pub level_iid: String,
     pub level_id: String,
     pub compatiable_levels: Vec<(String, usize)>,
-
     //pub to: Option<ConnectionTo>,
 }
 
 impl Display for Connection {
-    
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "side={:?} starting_at={} size={}", self.size, self.starting_at, self.size)
+        write!(
+            f,
+            "side={:?} starting_at={} size={}",
+            self.size, self.starting_at, self.size
+        )
     }
 }
 
 impl Connection {
-
     fn are_matching(&self, other: &Connection) -> bool {
-        self.side.is_opposite(other.side) &&
-        self.starting_at == other.starting_at &&
-        self.size == other.size
+        self.side.is_opposite(other.side)
+            && self.starting_at == other.starting_at
+            && self.size == other.size
     }
 }
-
-
 
 #[derive(Debug, Clone)]
 pub struct AvailableLevel {
@@ -105,11 +98,10 @@ pub struct AvailableLevel {
 
     pub connections: Vec<Connection>,
 
-    pub entity_locations: EntityLocations
+    pub entity_locations: EntityLocations,
 }
 
 pub type AvailableLevels = Vec<Rc<AvailableLevel>>;
-
 
 pub fn scan_width_side(
     connections: &mut Vec<Connection>,
@@ -131,7 +123,7 @@ pub fn scan_width_side(
                 size += 1;
             }
 
-            connections.push(Connection { 
+            connections.push(Connection {
                 index: *index,
                 size,
                 side: side.clone(),
@@ -141,7 +133,7 @@ pub fn scan_width_side(
             });
 
             *index = *index + 1;
-            
+
             i += size;
         } else {
             i += 1;
@@ -169,7 +161,7 @@ pub fn scan_height_side(
                 size += 1;
             }
 
-            connections.push(Connection { 
+            connections.push(Connection {
                 index: *index,
                 size,
                 side: side.clone(),
@@ -185,13 +177,9 @@ pub fn scan_height_side(
             i += 1;
         }
     }
-
 }
 
-
-
 pub fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
-
     let mut to_add_elements: Vec<(usize, usize, (AvailableLevel, usize))> = vec![];
 
     let mut i = 0;
@@ -199,14 +187,12 @@ pub fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
         let mut y = 0;
 
         while y < available_levels[i].connections.len() {
-
             let level = &available_levels[i];
             let connection = level.connections.get(y).unwrap();
 
             let mut ii = 1;
 
             while ii + i < available_levels.len() {
-
                 let mut yy = 0;
 
                 if available_levels[ii + i].level_type == LevelType::Spawn {
@@ -214,21 +200,18 @@ pub fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
                 }
 
                 while yy < available_levels[ii + i].connections.len() {
-
-
                     let other_level = &available_levels[ii + i];
 
                     let other_connection = other_level.connections.get(yy).unwrap();
 
                     if connection.are_matching(&other_connection) {
-
                         //if other_level.level_type != LevelType::Spawn {
-                            to_add_elements.push((i, y, (available_levels[ii + i].clone(), yy)));
+                        to_add_elements.push((i, y, (available_levels[ii + i].clone(), yy)));
                         //}
 
                         // adding otherlevel to add to level
                         //if level.level_type != LevelType::Spawn {
-                            to_add_elements.push((i + ii, yy, (available_levels[i].clone(), y)));
+                        to_add_elements.push((i + ii, yy, (available_levels[i].clone(), y)));
                         //}
                     }
 
@@ -237,7 +220,7 @@ pub fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
 
                 ii += 1;
             }
-            
+
             y += 1;
         }
 
@@ -245,11 +228,11 @@ pub fn populate_level_connections(available_levels: &mut Vec<AvailableLevel>) {
     }
 
     for to_add in to_add_elements {
-        available_levels[to_add.0].connections[to_add.1].compatiable_levels.push((to_add.2.0.level_id.clone(), to_add.2.1));
+        available_levels[to_add.0].connections[to_add.1]
+            .compatiable_levels
+            .push((to_add.2 .0.level_id.clone(), to_add.2 .1));
     }
-
 }
-
 
 pub struct MapGenerationContext {
     pub tile_size: (i32, i32),
@@ -268,13 +251,9 @@ pub struct MapGenerationData {
 }
 
 impl MapGenerationData {
-
     pub fn from_context(context: &MapGenerationContext) -> Self {
         Self {
             rng: rand::rngs::StdRng::seed_from_u64(context.config.seed as u64),
         }
     }
-    
 }
-
-

@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use bevy::input::ButtonInput;
+use bevy::prelude::*;
 
 pub fn move_camera(
     mut players: Query<&mut Transform, With<Camera2d>>,
@@ -21,13 +21,10 @@ pub fn move_camera(
         transform.translation.x += movement_direction.0 as f32 * 3.0;
         transform.translation.y += movement_direction.1 as f32 * 3.0;
     }
-
 }
-
 
 pub fn setup_camera(mut commands: Commands) {
     let mut camera = Camera2dBundle::default();
     camera.projection.scale = 1.3;
     commands.spawn(camera);
 }
-

@@ -1,9 +1,11 @@
-
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResolution};
 use bevy_ecs_ldtk::prelude::*;
 
-use utils::camera::tod::{move_camera, setup_camera};
-use map::{generation::config::MapGenerationConfig, ldtk::loader::{get_asset_loader_generation, reload_map, setup_generated_map}};
+use map::{
+    generation::config::MapGenerationConfig,
+    ldtk::loader::{get_asset_loader_generation, reload_map, setup_generated_map},
+};
+use utils::{camera::tod::{move_camera, setup_camera}, web::WebPlugin};
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
@@ -12,50 +14,58 @@ use rand::Rng;
 use std::env;
 
 fn main() {
-
     let level_loader = get_asset_loader_generation();
 
     let map_generation_config = get_config();
+    let window_plugin = WindowPlugin {
+        primary_window: Some(Window {
+            title: "Zombie".to_string(),
+            resolution: WindowResolution::new(800., 600.),
+            
+            resizable: true,
+            #[cfg(target_arch = "wasm32")]
+            canvas: Some("#bevy-canvas".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
 
     App::new()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()).set(window_plugin))
         .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(LdtkPlugin)
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, setup_generated_map)
-        .insert_resource(LdtkSettings{
-            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation { load_level_neighbors: false },
+        .insert_resource(LdtkSettings {
+            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
+                load_level_neighbors: false,
+            },
             ..default()
         })
         .insert_resource(map_generation_config)
-
         .register_asset_loader(level_loader)
-        .add_systems(
-            Update,
-            (
-                load_levels_if_not_present,
-                move_camera,
-                keyinput,
-            ),
-        )
+        .add_systems(Update, (load_levels_if_not_present, move_camera, keyinput))
+        .add_plugins(WebPlugin{})
         .run();
-
 }
-
 
 // should be a step before the game part
 fn load_levels_if_not_present(
     ldtk_project: Res<Assets<LdtkProject>>,
     mut level_set: Query<&mut LevelSet>,
 ) {
-
-    if ldtk_project.is_empty() { return; }
-    let ids: Vec<_> =  ldtk_project.ids().collect();
+    if ldtk_project.is_empty() {
+        return;
+    }
+    let ids: Vec<_> = ldtk_project.ids().collect();
     let id = ids.get(0).unwrap();
 
     let ldtk_project = ldtk_project.get(*id).unwrap();
-    let level_iids: Vec<_> = ldtk_project.data().iter_raw_levels().map(|l| l.iid.clone()).collect();
-
+    let level_iids: Vec<_> = ldtk_project
+        .data()
+        .iter_raw_levels()
+        .map(|l| l.iid.clone())
+        .collect();
 
     let mut level_set = level_set.iter_mut().last().unwrap();
     if level_set.iids.len() > 0 {
@@ -71,17 +81,19 @@ fn load_levels_if_not_present(
         }
     }
 
-    level_iids.iter().for_each(|id| { level_set.iids.insert(LevelIid::new(id)); });
+    level_iids.iter().for_each(|id| {
+        level_set.iids.insert(LevelIid::new(id));
+    });
 }
 
 fn keyinput(
     input: Res<ButtonInput<KeyCode>>,
     level_query: Query<Entity, With<LevelIid>>,
-    mut commands: Commands, asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut config: ResMut<MapGenerationConfig>,
     mut level_set: Query<&mut LevelSet>,
 ) {
-
     if input.just_pressed(KeyCode::KeyR) {
         for level_entity in &level_query {
             commands.entity(level_entity).despawn_recursive()
@@ -92,7 +104,6 @@ fn keyinput(
             level_set.iids.clear();
         }
     }
-
 }
 
 fn get_config() -> MapGenerationConfig {
@@ -118,5 +129,3 @@ fn get_config() -> MapGenerationConfig {
         ..Default::default()
     }
 }
-
-

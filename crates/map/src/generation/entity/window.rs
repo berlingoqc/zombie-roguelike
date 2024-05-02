@@ -1,6 +1,5 @@
 use crate::generation::position::Position;
 
-
 #[derive(Debug, Clone)]
 pub struct WindowConfig {
     pub position: Position,

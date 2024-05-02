@@ -1,6 +1,5 @@
 use crate::generation::position::Position;
 
-
 #[derive(Debug, Clone)]
 pub struct MultiTileEntityLocation {
     pub position: Position,
@@ -24,11 +23,15 @@ pub struct EntityLocations {
 }
 
 impl EntityLocations {
-    
-
     pub fn to_world_position(&self, room_position: Position) -> EntityLocations {
-
-
-        EntityLocations { doors: vec![], sodas: vec![], player_spawns: vec![], zombie_spawns: vec![], weapon_crates: vec![], weapons: vec![], windows: vec![] }
+        EntityLocations {
+            doors: vec![],
+            sodas: vec![],
+            player_spawns: vec![],
+            zombie_spawns: vec![],
+            weapon_crates: vec![],
+            weapons: vec![],
+            windows: vec![],
+        }
     }
 }

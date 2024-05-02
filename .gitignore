@@ -7,3 +7,6 @@
 **/public/assets/
 *generated.ldtk
 Cargo.lock
+
+website/wasm*
+website/assets

@@ -1,6 +1,5 @@
 use crate::generation::{position::Position, room::ConnectionTo};
 
-
 #[derive(Debug, Clone)]
 pub struct DoorConfig {
     pub connection: ConnectionTo,

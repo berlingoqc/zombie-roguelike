@@ -1,7 +1,6 @@
-
 use bevy::prelude::*;
+use bevy_ecs_ldtk::assets::{LdtkProjectLoader, LdtkProjectLoaderSettings};
 use bevy_ecs_ldtk::prelude::*;
-use bevy_ecs_ldtk::assets::{LdtkProjectLoaderSettings, LdtkProjectLoader};
 
 use once_cell::sync::Lazy;
 
@@ -10,10 +9,7 @@ use crate::generation::map_generation;
 
 use super::generation::{from_map, GeneratedMap};
 
-
-static mut CONFIG: Lazy<MapGenerationConfig> = Lazy::new(|| {
-    MapGenerationConfig::default()
-});
+static mut CONFIG: Lazy<MapGenerationConfig> = Lazy::new(|| MapGenerationConfig::default());
 
 fn set_global_config(config: &MapGenerationConfig) {
     unsafe {
@@ -26,33 +22,27 @@ fn set_global_config(config: &MapGenerationConfig) {
     }
 }
 
-
 pub fn get_asset_loader_generation() -> LdtkProjectLoader {
-
-    LdtkProjectLoader{
+    LdtkProjectLoader {
         callback: Some(Box::new(|map_json, config| {
-            let config: MapGenerationConfig = serde_json::from_value(serde_json::Value::Object(config))
+            let config: MapGenerationConfig =
+                serde_json::from_value(serde_json::Value::Object(config))
                     .expect("Failed to convert value to struct");
-            
+
             let context = from_map(&map_json, config);
             let mut generator = GeneratedMap::create(map_json);
 
             map_generation(context, &mut generator).unwrap();
 
             generator.get_generated_map()
-         })),
+        })),
     }
-
 }
 
-pub fn reload_map(
-    asset_server: &Res<AssetServer>,
-    config: &MapGenerationConfig,
-) {
+pub fn reload_map(asset_server: &Res<AssetServer>, config: &MapGenerationConfig) {
     set_global_config(config);
     asset_server.reload(config.map_path.clone());
 }
-
 
 pub fn load_map(
     commands: &mut Commands,
@@ -61,15 +51,16 @@ pub fn load_map(
 ) {
     set_global_config(config);
 
-    let ldtk_handle = asset_server.load_with_settings(config.map_path.clone(), |s: &mut LdtkProjectLoaderSettings| {
-        unsafe {
+    let ldtk_handle = asset_server.load_with_settings(
+        config.map_path.clone(),
+        |s: &mut LdtkProjectLoaderSettings| unsafe {
             s.data = serde_json::to_value(&*CONFIG)
-            .expect("Failed to convert struct to value")
-            .as_object()
-            .expect("Failed to convert value to object")
-            .clone();
-        }
-    });
+                .expect("Failed to convert struct to value")
+                .as_object()
+                .expect("Failed to convert value to object")
+                .clone();
+        },
+    );
 
     let level_set = LevelSet::default();
 
@@ -78,11 +69,11 @@ pub fn load_map(
         level_set,
         ..Default::default()
     });
-
 }
 
 pub fn setup_generated_map(
-    mut commands: Commands, asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     config: Res<MapGenerationConfig>,
 ) {
     load_map(&mut commands, &asset_server, config.as_ref())
