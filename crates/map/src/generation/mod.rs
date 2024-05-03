@@ -10,7 +10,7 @@ use crate::generation::imp::get_implementation;
 
 use self::{
     context::MapGenerationContext,
-    entity::{door::DoorConfig, window::WindowConfig},
+    entity::{door::DoorConfig, location::EntityLocation, window::WindowConfig},
     room::{Room, RoomConnection},
 };
 
@@ -20,8 +20,8 @@ trait IMapGeneration {
     // generate the next room and provide the two connection used to create this room
     fn get_next_room(&mut self) -> Option<(Room, RoomConnection, RoomConnection)>;
 
-    fn get_doors(&mut self) -> Vec<DoorConfig>;
-    fn get_windows(&mut self) -> Vec<WindowConfig>;
+    fn get_doors(&mut self) -> Vec<(EntityLocation, DoorConfig)>;
+    fn get_windows(&mut self) -> Vec<(EntityLocation, WindowConfig)>;
 }
 
 pub trait IMapGenerator {
@@ -31,8 +31,8 @@ pub trait IMapGenerator {
         connection_used: Option<&RoomConnection>,
         connected_to: Option<&RoomConnection>,
     );
-    fn add_doors(&mut self, doors: &Vec<DoorConfig>);
-    fn add_windows(&mut self, windows: &Vec<WindowConfig>);
+    fn add_doors(&mut self, doors: &Vec<(EntityLocation, DoorConfig)>);
+    fn add_windows(&mut self, windows: &Vec<(EntityLocation, WindowConfig)>);
 }
 
 pub fn map_generation(

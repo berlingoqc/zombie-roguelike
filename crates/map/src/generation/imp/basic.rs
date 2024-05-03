@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::generation::{
     context::{AvailableLevel, LevelType, MapGenerationContext, MapGenerationData},
-    entity::{door::DoorConfig, window::WindowConfig},
+    entity::{door::DoorConfig, location::EntityLocation, window::WindowConfig},
     position::Position,
     room::{ConnectionTo, RoomConnection},
     IMapGeneration, Room,
@@ -186,6 +186,37 @@ impl BasicMapGeneration {
             }
         }
     }
+
+
+
+    fn get_entities(
+        &mut self,
+    ) -> Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)> {
+        // get all my level , get all the doors in each level
+        self.map
+            .rooms
+            .iter()
+            .flat_map(|x| {
+                x.entity_locations
+                    .doors
+                    .iter()
+                    .map(|y| (
+                        EntityLocation{
+                            position: y.position,
+                            size: y.size,
+                            level_iid: x.level_iid.clone(),
+                        },
+                        DoorConfig {
+                            // TODO: create the algo to fix the price of door
+                            cost: 1000,
+                            // TODO: create the algo to found the electrify rule
+                            electrify: true,
+                            })
+                    )
+                    .collect::<Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)>>()
+            })
+            .collect()
+    }
 }
 
 impl IMapGeneration for BasicMapGeneration {
@@ -237,7 +268,7 @@ impl IMapGeneration for BasicMapGeneration {
         room
     }
 
-    fn get_doors(&mut self) -> Vec<crate::generation::entity::door::DoorConfig> {
+    fn get_doors(&mut self) -> Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)> {
         // get all my level , get all the doors in each level
         self.map
             .rooms
@@ -246,20 +277,43 @@ impl IMapGeneration for BasicMapGeneration {
                 x.entity_locations
                     .doors
                     .iter()
-                    .map(|y| DoorConfig {
-                        position: Position(0, 0),
-                        size: (0, 0),
-                        level_iid: x.level_iid.clone(),
-                        connection: ConnectionTo::DeadEnd,
-                        cost: 100,
-                        electrify: false,
-                    })
-                    .collect::<Vec<crate::generation::entity::door::DoorConfig>>()
+                    .map(|y| (
+                        EntityLocation{
+                            position: y.position,
+                            size: y.size,
+                            level_iid: x.level_iid.clone(),
+                        },
+                        DoorConfig {
+                            // TODO: create the algo to fix the price of door
+                            cost: 1000,
+                            // TODO: create the algo to found the electrify rule
+                            electrify: true,
+                            })
+                    )
+                    .collect::<Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)>>()
             })
             .collect()
     }
 
-    fn get_windows(&mut self) -> Vec<crate::generation::entity::window::WindowConfig> {
-        vec![]
+
+    fn get_windows(&mut self) -> Vec<(EntityLocation, crate::generation::entity::window::WindowConfig)> {
+        self.map
+            .rooms
+            .iter()
+            .flat_map(|x| {
+                x.entity_locations
+                    .windows
+                    .iter()
+                    .map(|y| (
+                        EntityLocation{
+                            position: y.position,
+                            size: y.size,
+                            level_iid: x.level_iid.clone(),
+                        },
+                        WindowConfig{}
+                    ))
+                    .collect::<Vec<(EntityLocation, crate::generation::entity::window::WindowConfig)>>()
+            }).collect()
     }
+
 }

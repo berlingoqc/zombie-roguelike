@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{default, rc::Rc};
 
 use bevy::utils::Uuid;
 
@@ -9,9 +9,10 @@ use super::{
     position::Position,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum ConnectionTo {
     Room((String, usize)),
+    #[default]
     DeadEnd,
     OutSide,
 }

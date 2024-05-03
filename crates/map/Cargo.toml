@@ -8,6 +8,8 @@ edition = "2021"
 bevy = "*"
 bevy_ecs_ldtk = { version = "*", default-features = true }
 
+utils = { path = "../utils"}
+
 
 rand = "0.8.5"
 

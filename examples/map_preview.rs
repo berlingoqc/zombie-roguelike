@@ -2,8 +2,7 @@ use bevy::{prelude::*, window::WindowResolution};
 use bevy_ecs_ldtk::prelude::*;
 
 use map::{
-    generation::config::MapGenerationConfig,
-    ldtk::loader::{get_asset_loader_generation, reload_map, setup_generated_map},
+    generation::config::MapGenerationConfig, ldtk::{ loader::{get_asset_loader_generation, reload_map, setup_generated_map}, plugins::LdtkRoguePlugin}
 };
 use utils::{camera::tod::{move_camera, setup_camera}, web::WebPlugin};
 
@@ -33,15 +32,9 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()).set(window_plugin))
         .add_plugins(WorldInspectorPlugin::new())
-        .add_plugins(LdtkPlugin)
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, setup_generated_map)
-        .insert_resource(LdtkSettings {
-            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
-                load_level_neighbors: false,
-            },
-            ..default()
-        })
+        .add_plugins(LdtkRoguePlugin)
         .insert_resource(map_generation_config)
         .register_asset_loader(level_loader)
         .add_systems(Update, (load_levels_if_not_present, move_camera, keyinput))

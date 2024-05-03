@@ -1,5 +1,6 @@
 use bevy_ecs_ldtk::ldtk::LdtkJson;
 use map::ldtk::generation::{from_map, GeneratedMap};
+use map::ldtk::loader::file::load_ldtk_json_file;
 use serde_json::{from_str, to_string_pretty};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -36,15 +37,7 @@ fn main() {
     println!("loading base map {}", map_path);
 
     // Open the file
-    let mut file = File::open(map_path).expect("Failed to open file");
-
-    // Read the file content into a string
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .expect("Failed to read file");
-
-    // Deserialize the JSON string into your data structure
-    let data: LdtkJson = from_str(&contents).expect("Failed to deserialize JSON");
+    let data: LdtkJson = load_ldtk_json_file(&map_path).expect("Failed to deserialize JSON");
 
     let config = MapGenerationConfig {
         seed,
