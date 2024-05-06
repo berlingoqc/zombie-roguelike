@@ -2,7 +2,7 @@ use bevy::{prelude::*, window::WindowResolution};
 use bevy_ecs_ldtk::prelude::*;
 
 use map::{
-    generation::config::MapGenerationConfig, ldtk::{ loader::{get_asset_loader_generation, reload_map, setup_generated_map}, plugins::LdtkRoguePlugin}
+    generation::{config::MapGenerationConfig, LEVEL_PROPERTIES_SPAWN_NAME}, ldtk::{ loader::{get_asset_loader_generation, reload_map, setup_generated_map}, plugins::LdtkRoguePlugin}
 };
 use utils::{camera::tod::{move_camera, setup_camera}, web::WebPlugin};
 
@@ -35,11 +35,44 @@ fn main() {
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, setup_generated_map)
         .add_plugins(LdtkRoguePlugin)
+        .add_systems(
+            Update,
+            set_level_title_to_current_level.run_if(on_event::<LevelEvent>()),
+        )
         .insert_resource(map_generation_config)
         .register_asset_loader(level_loader)
         .add_systems(Update, (load_levels_if_not_present, move_camera, keyinput))
         .add_plugins(WebPlugin{})
         .run();
+}
+
+// TODO: create a real function with this to be able to tag all level with a component
+// with their configuration
+pub fn set_level_title_to_current_level(
+    mut level_events: EventReader<LevelEvent>,
+    levels: Query<&LevelIid>,
+    projects: Query<&Handle<LdtkProject>>,
+    project_assets: Res<Assets<LdtkProject>>,
+) {
+    for level_event in level_events.read() {
+        if matches!(level_event, LevelEvent::Transformed(_)) {
+            for level_iid in levels.iter() {
+                let level_data = project_assets
+                    .get(projects.single())
+                    .expect("project asset should be loaded if levels are spawned")
+                    .get_raw_level_by_iid(&level_iid.to_string())
+                    .expect("spawned level should exist in the loaded project");
+
+                let is_spawn = level_data
+                    .get_bool_field(LEVEL_PROPERTIES_SPAWN_NAME)
+                    .expect("level should have non-nullable title string field");
+
+                if *is_spawn == true {
+                    println!("found a spawn level: {}", level_iid);
+                }
+            }
+        }
+    }
 }
 
 // should be a step before the game part

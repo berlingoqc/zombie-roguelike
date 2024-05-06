@@ -1,6 +1,8 @@
-use std::{default, rc::Rc};
+use std::{collections::HashMap, default, rc::Rc};
 
 use bevy::utils::Uuid;
+use bevy_ecs_ldtk::ldtk::FieldValue;
+use serde_json::Value;
 
 use super::{
     config::MapGenerationConfig,
@@ -26,6 +28,9 @@ pub struct RoomConnection {
     pub to: Option<ConnectionTo>,
 }
 
+/*
+ * Room is an instance of a level in a map that is being generated
+ */
 #[derive(Debug, Clone)]
 pub struct Room {
     pub level_iid: String,
@@ -34,10 +39,12 @@ pub struct Room {
     pub entity_locations: EntityLocations,
 
     pub level_def: Rc<AvailableLevel>,
+
+    pub properties: HashMap<String, Value>,
 }
 
 impl Room {
-    pub fn create(level: Rc<AvailableLevel>, position: Position) -> Self {
+    pub fn create(level: Rc<AvailableLevel>, position: Position, properties: HashMap<String, Value>) -> Self {
         let level_iid: String = Uuid::new_v4().into();
 
         let connections: Vec<_> = level
@@ -57,6 +64,7 @@ impl Room {
             position: position,
             entity_locations: level.entity_locations.clone(),
             connections,
+            properties,
             level_def: level,
         }
     }

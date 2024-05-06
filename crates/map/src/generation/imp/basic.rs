@@ -5,10 +5,12 @@ use crate::generation::{
     entity::{door::DoorConfig, location::EntityLocation, window::WindowConfig},
     position::Position,
     room::{ConnectionTo, RoomConnection},
-    IMapGeneration, Room,
+    IMapGeneration, Room, LEVEL_PROPERTIES_SPAWN_NAME,
 };
 
 use rand::Rng;
+use serde_json::Value;
+use utils::map;
 
 // private struct to store data during the map generation
 struct Map {
@@ -149,7 +151,7 @@ impl BasicMapGeneration {
                         &self.context.tile_size,
                     );
 
-                    let mut new_room = Room::create(compatible_level_def.clone(), my_position);
+                    let mut new_room = Room::create(compatible_level_def.clone(), my_position, map!(LEVEL_PROPERTIES_SPAWN_NAME => Value::Bool(false)));
 
                     if new_room.is_outside(&self.context.config) {
                         previous_room
@@ -250,7 +252,7 @@ impl IMapGeneration for BasicMapGeneration {
                 .get_range_y(spawning_room_def.level_size_p.1),
         );
 
-        let spawning_room_def = Room::create(spawning_room_def.clone(), Position(x, y));
+        let spawning_room_def = Room::create(spawning_room_def.clone(), Position(x, y), map!(LEVEL_PROPERTIES_SPAWN_NAME => Value::Bool(true)));
         self.map.rooms.push(spawning_room_def.clone());
         self.map.last_generated_room_index = Some(0);
 

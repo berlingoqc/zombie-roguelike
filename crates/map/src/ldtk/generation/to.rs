@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use bevy::{math::{IVec2, Vec2}, utils::Uuid};
 use bevy_ecs_ldtk::{ldtk::{FieldInstance, FieldValue, LdtkJson, Level, NeighbourLevel, RealEditorValue, TilesetRectangle}, EntityInstance};
+use serde_json::Value;
 
 use crate::{generation::{entity::location::EntityLocation, position::Position, room::{Room, RoomConnection}, IMapGenerator}, ldtk::map_const::{self, FIELD_ELECTRIFY_NAME, FIELD_PRICE_NAME, LAYER_ENTITY}};
 
@@ -26,6 +27,26 @@ impl GeneratedRoom {
         level.world_x = room.position.0;
         level.world_y = room.position.1;
         level.neighbours.clear();
+        //TODO: set the fieldInstance from the room properties
+        // if not present nulify
+        if !room.properties.is_empty() {
+            for field in level.field_instances.iter_mut() {
+                if let Some(value) = room.properties.get(field.identifier.as_str()) {
+                    field.value = match value {
+                      Value::Bool(b_value) => FieldValue::Bool(*b_value),
+                      _ => FieldValue::String(None)  
+                    };
+                    field.real_editor_values = vec![
+                        Some(RealEditorValue{
+                            // TODO: do the correct mapping
+                           id: "V_Bool".to_string(),
+                           params: vec![value.clone()]
+                        })
+                    ]
+                }
+            
+            }
+        }
         level
             .layer_instances
             .as_mut()
@@ -193,8 +214,8 @@ impl IMapGenerator for GeneratedMap {
         let mut generated_room = GeneratedRoom::create(self.ldtk_json.clone(), room);
 
         println!(
-            "adding room id={} type={:?} from_level={} position={}",
-            room.level_iid, room.level_def.level_type, room.level_def.level_id, room.position
+            "adding room id={} type={:?} from_level={} position={} \n property={:?}",
+            room.level_iid, room.level_def.level_type, room.level_def.level_id, room.position, room.properties
         );
 
         if let Some(connected_to) = connected_to {

@@ -14,6 +14,10 @@ use self::{
     room::{Room, RoomConnection},
 };
 
+
+pub const LEVEL_PROPERTIES_SPAWN_NAME: &str= "spawn";
+pub const LEVEL_PROPERTIES_GENERATION_NAME: &str= "generation";
+
 trait IMapGeneration {
     // generate the first room that will be the game starting point
     fn get_spawning_room(&mut self) -> Room;
