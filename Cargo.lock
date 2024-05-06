@@ -2550,6 +2550,7 @@ name = "map"
 version = "0.2.0"
 dependencies = [
  "bevy",
+ "bevy-inspector-egui",
  "bevy_ecs_ldtk",
  "once_cell",
  "pathfinding",

@@ -27,8 +27,7 @@ impl GeneratedRoom {
         level.world_x = room.position.0;
         level.world_y = room.position.1;
         level.neighbours.clear();
-        //TODO: set the fieldInstance from the room properties
-        // if not present nulify
+
         if !room.properties.is_empty() {
             for field in level.field_instances.iter_mut() {
                 if let Some(value) = room.properties.get(field.identifier.as_str()) {
