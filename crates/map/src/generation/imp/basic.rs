@@ -190,35 +190,6 @@ impl BasicMapGeneration {
     }
 
 
-
-    fn get_entities(
-        &mut self,
-    ) -> Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)> {
-        // get all my level , get all the doors in each level
-        self.map
-            .rooms
-            .iter()
-            .flat_map(|x| {
-                x.entity_locations
-                    .doors
-                    .iter()
-                    .map(|y| (
-                        EntityLocation{
-                            position: y.position,
-                            size: y.size,
-                            level_iid: x.level_iid.clone(),
-                        },
-                        DoorConfig {
-                            // TODO: create the algo to fix the price of door
-                            cost: 1000,
-                            // TODO: create the algo to found the electrify rule
-                            electrify: true,
-                            })
-                    )
-                    .collect::<Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)>>()
-            })
-            .collect()
-    }
 }
 
 impl IMapGeneration for BasicMapGeneration {
@@ -315,6 +286,35 @@ impl IMapGeneration for BasicMapGeneration {
                         WindowConfig{}
                     ))
                     .collect::<Vec<(EntityLocation, crate::generation::entity::window::WindowConfig)>>()
+            }).collect()
+    }
+
+    fn get_player_spawn(&mut self) -> Vec<(EntityLocation, ())> {
+        self.map
+            .rooms
+            .iter()
+            .filter(|x| { 
+                let property = x.properties.get(LEVEL_PROPERTIES_SPAWN_NAME);
+                if let Some(property) = property {
+                    if let Value::Bool(b) = property {
+                        return *b;
+                    }
+                }
+                return false; 
+            }).flat_map(|roor| {
+                roor.entity_locations
+                    .player_spawns
+                    .iter()
+                    .map(|y| (
+                        EntityLocation{
+                            position: y.position,
+                            size: y.size,
+                            level_iid: roor.level_iid.clone()
+                        },
+                        ()
+                    ))
+                    .collect::<Vec<(EntityLocation, ())>>()
+
             }).collect()
     }
 

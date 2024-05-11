@@ -268,5 +268,11 @@ impl IMapGenerator for GeneratedMap {
             self.add_entity_to_level(location, map_const::ENTITY_WINDOW_LOCATION,vec![]);
         }
     }
+    
+    fn add_player_spawns(&mut self, player_spawns: &Vec<(EntityLocation, ())>) {
+        for (location, _) in player_spawns.iter() {
+            self.add_entity_to_level(location, map_const::ENTITY_PLAYER_SPAWN_LOCATION, vec![]);
+        }
+    }
 }
 

@@ -26,6 +26,7 @@ trait IMapGeneration {
 
     fn get_doors(&mut self) -> Vec<(EntityLocation, DoorConfig)>;
     fn get_windows(&mut self) -> Vec<(EntityLocation, WindowConfig)>;
+    fn get_player_spawn(&mut self) -> Vec<(EntityLocation, ())>;
 }
 
 pub trait IMapGenerator {
@@ -37,6 +38,7 @@ pub trait IMapGenerator {
     );
     fn add_doors(&mut self, doors: &Vec<(EntityLocation, DoorConfig)>);
     fn add_windows(&mut self, windows: &Vec<(EntityLocation, WindowConfig)>);
+    fn add_player_spawns(&mut self, player_spawns: &Vec<(EntityLocation, ())>);
 }
 
 pub fn map_generation(
@@ -66,6 +68,9 @@ pub fn map_generation(
 
     let windows = generator.get_windows();
     map_generator.add_windows(&windows);
+
+    let player_spawns = generator.get_player_spawn();
+    map_generator.add_player_spawns(&player_spawns);
 
     Ok(())
 }
