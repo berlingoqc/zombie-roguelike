@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::game::entity::{door::DoorComponent, player_spawn::PlayerSpawnComponent, room::RoomComponent, window::WindowComponent};
+use crate::game::entity::map::{door::DoorComponent, player_spawn::PlayerSpawnComponent, room::RoomComponent, window::WindowComponent};
 
 use super::{game::{entity::{door::DoorBundle, player_spawn::PlayerSpawnBundle, window::WindowBundle}, system::add_level_components::add_room_component_to_ldtk_level}, map_const};
 

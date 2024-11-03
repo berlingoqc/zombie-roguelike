@@ -1,6 +1,6 @@
 use bevy::prelude::*; use bevy_ecs_ldtk::prelude::*;
 
-use crate::game::entity::player_spawn::PlayerSpawnComponent;
+use crate::game::entity::map::player_spawn::PlayerSpawnComponent;
 
 
 #[derive(Default, Bundle, LdtkEntity)]

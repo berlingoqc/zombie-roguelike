@@ -2,7 +2,7 @@ use bevy::prelude::*; use bevy_ecs_ldtk::prelude::*;
 
 use crate::generation::entity::door::DoorConfig;
 use crate::ldtk::map_const;
-use crate::game::entity::door::DoorComponent;
+use crate::game::entity::map::door::DoorComponent;
 
 impl DoorComponent {
     pub fn from_field(entity_instance: &EntityInstance) -> DoorComponent {

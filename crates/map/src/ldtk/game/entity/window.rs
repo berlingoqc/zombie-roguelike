@@ -1,6 +1,6 @@
 use bevy::prelude::*; use bevy_ecs_ldtk::prelude::*;
 
-use crate::{game::entity::window::WindowComponent, generation::entity::window::WindowConfig,};
+use crate::{game::entity::map::window::WindowComponent, generation::entity::window::WindowConfig,};
 
 impl WindowComponent {
     pub fn from_field(_: &EntityInstance) -> Self {

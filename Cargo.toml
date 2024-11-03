@@ -24,6 +24,7 @@ pathfinding = "4.9.1"
 
 utils = { path = "./crates/utils" }
 map = { path = "./crates/map" }
+game = { path = "./crates/game" }
 
 [dev-dependencies]
 bevy = "0.13"
@@ -39,6 +40,10 @@ path = "examples/map_preview.rs"
 [[example]]
 name = "map_generation"
 path = "examples/map_generation.rs"
+
+[[example]]
+name = "map_explorer"
+path = "examples/map_explorer.rs"
 
 [patch.crates-io]
 bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap", branch = "main" }
