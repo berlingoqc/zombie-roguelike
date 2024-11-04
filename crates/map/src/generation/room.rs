@@ -1,7 +1,6 @@
-use std::{collections::HashMap, default, rc::Rc};
+use std::{collections::HashMap, rc::Rc};
 
-use bevy::utils::Uuid;
-use bevy_ecs_ldtk::ldtk::FieldValue;
+use uuid::Uuid;
 use serde_json::Value;
 
 use super::{

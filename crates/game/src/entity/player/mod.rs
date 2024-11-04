@@ -15,7 +15,7 @@ pub struct Player {
 pub struct PlayerBundle {
     pub player: Player,
     //#[bundle]
-    pub sprite: SpriteSheetBundle,
+    //pub sprite: SpriteSheetBundle,
 
     //pub velocity: Velocity,
     //pub player_current_input: PlayerCurrentInput,

@@ -1,4 +1,5 @@
-use bevy::prelude::*; use bevy_ecs_ldtk::prelude::*;
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
 
 use crate::generation::entity::door::DoorConfig;
 use crate::ldtk::map_const;
@@ -21,6 +22,6 @@ pub struct DoorBundle {
     #[with(DoorComponent::from_field)]
     door: DoorComponent,
     #[sprite_sheet_bundle]
-    sprite_sheet: SpriteSheetBundle,
+    sprite_sheet: LdtkSpriteSheetBundle,
 }
 

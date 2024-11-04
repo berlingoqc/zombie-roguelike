@@ -1,10 +1,11 @@
 use std::rc::Rc;
 
-use bevy::{math::{IVec2, Vec2}, utils::Uuid};
-use bevy_ecs_ldtk::{ldtk::{FieldInstance, FieldValue, LdtkJson, Level, NeighbourLevel, RealEditorValue, TilesetRectangle}, EntityInstance};
+use bevy::math::{IVec2, Vec2};
+use bevy_ecs_ldtk::{ldtk::{FieldInstance, FieldValue, LdtkJson, Level, NeighbourLevel, RealEditorValue}, EntityInstance};
 use serde_json::Value;
+use uuid::Uuid;
 
-use crate::{generation::{entity::location::EntityLocation, position::Position, room::{Room, RoomConnection}, IMapGenerator}, ldtk::map_const::{self, FIELD_ELECTRIFY_NAME, FIELD_PRICE_NAME, LAYER_ENTITY}};
+use crate::{generation::{entity::location::EntityLocation, room::{Room, RoomConnection}, IMapGenerator}, ldtk::map_const::{self, FIELD_ELECTRIFY_NAME, FIELD_PRICE_NAME, LAYER_ENTITY}};
 
 
 #[derive(Debug, Clone)]

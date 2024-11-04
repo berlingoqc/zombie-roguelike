@@ -1,7 +1,7 @@
 
 use bevy::{
     prelude::*,
-    asset::{LoadContext, ron, AsyncReadExt, io::Reader, AssetLoader, BoxedFuture, LoadedAsset},
+    asset::{LoadContext, ron, AsyncReadExt, io::Reader, AssetLoader},
     utils::HashMap
 };
 use serde::Deserialize;
@@ -62,18 +62,16 @@ impl AssetLoader for CharacterAnimationConfigurationLoader {
     type Settings = ();
     type Error = CustomAssetLoaderError;
 
-    fn load<'a>(
+    async fn load<'a>(
         &'a self,
-        reader: &'a mut Reader,
+        reader: &'a mut Reader<'_>,
         _settings: &'a (),
-        _load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
-        Box::pin(async move {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            let custom_asset = ron::de::from_bytes::<CharacterAnimationConfiguration>(&bytes)?;
-            Ok(custom_asset)
-        })
+        _load_context: &'a mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let custom_asset = ron::de::from_bytes::<CharacterAnimationConfiguration>(&bytes)?;
+        Ok(custom_asset)
     }
 
     fn extensions(&self) -> &[&str] {

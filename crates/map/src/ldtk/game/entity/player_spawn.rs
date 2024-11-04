@@ -7,6 +7,6 @@ use crate::game::entity::map::player_spawn::PlayerSpawnComponent;
 pub struct PlayerSpawnBundle {
     player_spawn: PlayerSpawnComponent,
     #[sprite_sheet_bundle]
-    sprite_sheet: SpriteSheetBundle
+    sprite_sheet: LdtkSpriteSheetBundle
 
 }

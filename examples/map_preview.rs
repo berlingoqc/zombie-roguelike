@@ -104,7 +104,7 @@ fn get_config() -> MapGenerationConfig {
     let args: Vec<String> = env::args().collect();
 
     let map_path = if args.len() < 2 {
-        "exemples/test_map.ldtk".to_string()
+        "exemples\\test_map.ldtk".to_string()
     } else {
         args.get(1).unwrap().clone()
     };
