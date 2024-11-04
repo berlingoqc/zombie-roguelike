@@ -2,9 +2,9 @@ use bevy::{prelude::*, window::WindowResolution};
 use bevy_ecs_ldtk::prelude::*;
 
 use map::{
-    generation::{config::MapGenerationConfig, LEVEL_PROPERTIES_SPAWN_NAME}, ldtk::{ loader::{get_asset_loader_generation, reload_map, setup_generated_map}, plugins::{LdtkRoguePlugin, MyWorldInspectorPlugin}}
+    generation::config::MapGenerationConfig, ldtk::{ loader::{get_asset_loader_generation, setup_generated_map}, plugins::{LdtkRoguePlugin, MyWorldInspectorPlugin}}
 };
-use utils::{camera::tod::{move_camera, setup_camera}, web::WebPlugin};
+use utils::{camera::tod::setup_camera, web::WebPlugin};
 use game::plugins::BaseZombieGamePlugin;
 
 

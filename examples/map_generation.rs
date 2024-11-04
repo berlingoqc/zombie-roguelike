@@ -1,9 +1,9 @@
 use bevy_ecs_ldtk::ldtk::LdtkJson;
 use map::ldtk::generation::{from_map, GeneratedMap};
 use map::ldtk::loader::file::load_ldtk_json_file;
-use serde_json::{from_str, to_string_pretty};
+use serde_json::to_string_pretty;
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::Write;
 
 use map::generation::{config::MapGenerationConfig, map_generation};
 
