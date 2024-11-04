@@ -98,7 +98,7 @@ pub fn system_character_animation_config(
 
 pub fn react_character_animation(
     mut asset_events: EventReader<AssetEvent<CharacterAnimationConfiguration>>,
-    mut commands: Commands,
+    commands: Commands,
 ) {
     for event in asset_events.read() {
         match event {
@@ -144,11 +144,11 @@ pub fn system_animation_character(
     time: Res<Time>,
 ) {
 
-    for (movement_state, mut atlas_sprite, mut timer, mut looking_at, mut transform) in q_player.iter_mut() {
+    for (movement_state, mut atlas_sprite, mut timer, looking_at, transform) in q_player.iter_mut() {
 
         timer.timer.tick(time.delta());
 
-	    let mut player_config_state = player_config_state.0.get_mut(timer.asset_type.as_str()).unwrap();
+	    let player_config_state = player_config_state.0.get_mut(timer.asset_type.as_str()).unwrap();
 
         //validate_asset_loading(&asset_server, &mut player_config_state, &mut texture_atlases);
 
@@ -189,8 +189,8 @@ pub fn system_animation_character(
 pub fn system_looking_at(
     mut q_character: Query<(&mut Transform, &mut LookingAt)>
 ) {
-    for (mut transform, mut looking_at) in q_character.iter_mut() {
-        let diff = if !looking_at.1 { (looking_at.0 - transform.translation.truncate()) } else {
+    for (mut transform, looking_at) in q_character.iter_mut() {
+        let diff = if !looking_at.1 { looking_at.0 - transform.translation.truncate() } else {
             looking_at.0
         };
         let angle = diff.y.atan2(diff.x);
@@ -204,7 +204,7 @@ pub fn system_looking_at(
 
 pub fn setup_character_animation_config(
     mut state: ResMut<CharacterAnimationConfigurationState>,
-    mut commands: Commands,
+    commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
 	state.add_handler(&asset_server, "player", "characters/player/player.animation.ron".to_string());
