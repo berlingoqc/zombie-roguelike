@@ -12,10 +12,10 @@ pub const ENTITY_WINDOW_LOCATION: &str = "Window";
 pub const ENTITY_SODA_LOCATION: &str = "SodaLocation";
 
 
-pub const FIELD_BOOL_TYPE: &str = "Bool";
-pub const FIELD_INT_TYPE: &str = "Int";
+// pub const FIELD_BOOL_TYPE: &str = "Bool";
+// pub const FIELD_INT_TYPE: &str = "Int";
 
 pub const FIELD_PRICE_NAME: &str = "price";
-pub const FIELD_PRICE_TYPE: &str = FIELD_INT_TYPE;
+// pub const FIELD_PRICE_TYPE: &str = FIELD_INT_TYPE;
 pub const FIELD_ELECTRIFY_NAME: &str = "electrify";
-pub const FIELD_ELECTRIFY_TYPE: &str = FIELD_BOOL_TYPE;
+// pub const FIELD_ELECTRIFY_TYPE: &str = FIELD_BOOL_TYPE;

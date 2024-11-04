@@ -70,7 +70,7 @@ pub struct GeneratedMap {
 }
 
 
-pub fn add_property_entity() {}
+pub fn _add_property_entity() {}
 
 
 pub fn get_new_entity(

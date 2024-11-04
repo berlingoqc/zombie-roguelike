@@ -98,7 +98,7 @@ pub fn system_character_animation_config(
 
 pub fn react_character_animation(
     mut asset_events: EventReader<AssetEvent<CharacterAnimationConfiguration>>,
-    commands: Commands,
+    _commands: Commands,
 ) {
     for event in asset_events.read() {
         match event {
@@ -111,10 +111,10 @@ pub fn react_character_animation(
 }
 
 
-fn validate_asset_loading(
-    asset_server: &Res<AssetServer>,
-	player_config_state: &mut CharacterAnimationStateHandle,
-    texture_atlases_layout: &mut ResMut<Assets<TextureAtlasLayout>>,
+fn _validate_asset_loading(
+    _asset_server: &Res<AssetServer>,
+	_player_config_state: &mut CharacterAnimationStateHandle,
+    _texture_atlases_layout: &mut ResMut<Assets<TextureAtlasLayout>>,
 ) {
     // TODO move to the setup directy
     /*
@@ -144,7 +144,7 @@ pub fn system_animation_character(
     time: Res<Time>,
 ) {
 
-    for (movement_state, mut atlas_sprite, mut timer, looking_at, transform) in q_player.iter_mut() {
+    for (movement_state, mut atlas_sprite, mut timer, _looking_at, _transform) in q_player.iter_mut() {
 
         timer.timer.tick(time.delta());
 
@@ -204,7 +204,7 @@ pub fn system_looking_at(
 
 pub fn setup_character_animation_config(
     mut state: ResMut<CharacterAnimationConfigurationState>,
-    commands: Commands,
+    _commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
 	state.add_handler(&asset_server, "player", "characters/player/player.animation.ron".to_string());

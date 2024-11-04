@@ -31,7 +31,7 @@ mod tests {
         let generated_map = get_context();
 
 
-        let first_level = generated_map.generated_rooms.get(0).unwrap();
+        let _first_level = generated_map.generated_rooms.get(0).unwrap();
     }
 
 
@@ -48,7 +48,7 @@ mod tests {
 
         map_generation(context, &mut generator).expect("Failed to generate map");
 
-        let data = generator.get_generated_map();
+        let _data = generator.get_generated_map();
 
         return generator;
     }
