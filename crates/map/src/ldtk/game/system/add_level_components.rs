@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 use crate::{game::entity::map::room::RoomComponent, generation::{entity::room::RoomConfig, LEVEL_PROPERTIES_SPAWN_NAME}};

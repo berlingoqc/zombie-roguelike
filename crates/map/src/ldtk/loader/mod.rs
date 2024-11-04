@@ -6,7 +6,6 @@ use bevy_ecs_ldtk::assets::{LdtkProjectLoader, LdtkProjectLoaderSettings};
 use bevy_ecs_ldtk::prelude::*;
 
 use once_cell::sync::Lazy;
-use serde_json::map;
 
 use crate::generation::config::MapGenerationConfig;
 use crate::generation::map_generation;
