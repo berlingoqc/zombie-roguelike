@@ -11,7 +11,6 @@ pub const ENTITY_WEAPON_LOCATION: &str = "WeaponLocation";
 pub const ENTITY_WINDOW_LOCATION: &str = "Window";
 pub const ENTITY_SODA_LOCATION: &str = "SodaLocation";
 
-
 // pub const FIELD_BOOL_TYPE: &str = "Bool";
 // pub const FIELD_INT_TYPE: &str = "Int";
 

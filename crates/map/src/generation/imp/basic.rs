@@ -151,7 +151,11 @@ impl BasicMapGeneration {
                         &self.context.tile_size,
                     );
 
-                    let mut new_room = Room::create(compatible_level_def.clone(), my_position, map!(LEVEL_PROPERTIES_SPAWN_NAME => Value::Bool(false)));
+                    let mut new_room = Room::create(
+                        compatible_level_def.clone(),
+                        my_position,
+                        map!(LEVEL_PROPERTIES_SPAWN_NAME => Value::Bool(false)),
+                    );
 
                     if new_room.is_outside(&self.context.config) {
                         previous_room
@@ -188,8 +192,6 @@ impl BasicMapGeneration {
             }
         }
     }
-
-
 }
 
 impl IMapGeneration for BasicMapGeneration {
@@ -223,7 +225,11 @@ impl IMapGeneration for BasicMapGeneration {
                 .get_range_y(spawning_room_def.level_size_p.1),
         );
 
-        let spawning_room_def = Room::create(spawning_room_def.clone(), Position(x, y), map!(LEVEL_PROPERTIES_SPAWN_NAME => Value::Bool(true)));
+        let spawning_room_def = Room::create(
+            spawning_room_def.clone(),
+            Position(x, y),
+            map!(LEVEL_PROPERTIES_SPAWN_NAME => Value::Bool(true)),
+        );
         self.map.rooms.push(spawning_room_def.clone());
         self.map.last_generated_room_index = Some(0);
 
@@ -250,26 +256,32 @@ impl IMapGeneration for BasicMapGeneration {
                 x.entity_locations
                     .doors
                     .iter()
-                    .map(|y| (
-                        EntityLocation{
-                            position: y.position,
-                            size: y.size,
-                            level_iid: x.level_iid.clone(),
-                        },
-                        DoorConfig {
-                            // TODO: create the algo to fix the price of door
-                            cost: 1000,
-                            // TODO: create the algo to found the electrify rule
-                            electrify: true,
-                            })
-                    )
+                    .map(|y| {
+                        (
+                            EntityLocation {
+                                position: y.position,
+                                size: y.size,
+                                level_iid: x.level_iid.clone(),
+                            },
+                            DoorConfig {
+                                // TODO: create the algo to fix the price of door
+                                cost: 1000,
+                                // TODO: create the algo to found the electrify rule
+                                electrify: true,
+                            },
+                        )
+                    })
                     .collect::<Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)>>()
             })
             .collect()
     }
 
-
-    fn get_windows(&mut self) -> Vec<(EntityLocation, crate::generation::entity::window::WindowConfig)> {
+    fn get_windows(
+        &mut self,
+    ) -> Vec<(
+        EntityLocation,
+        crate::generation::entity::window::WindowConfig,
+    )> {
         self.map
             .rooms
             .iter()
@@ -277,45 +289,53 @@ impl IMapGeneration for BasicMapGeneration {
                 x.entity_locations
                     .windows
                     .iter()
-                    .map(|y| (
-                        EntityLocation{
-                            position: y.position,
-                            size: y.size,
-                            level_iid: x.level_iid.clone(),
-                        },
-                        WindowConfig{}
-                    ))
-                    .collect::<Vec<(EntityLocation, crate::generation::entity::window::WindowConfig)>>()
-            }).collect()
+                    .map(|y| {
+                        (
+                            EntityLocation {
+                                position: y.position,
+                                size: y.size,
+                                level_iid: x.level_iid.clone(),
+                            },
+                            WindowConfig {},
+                        )
+                    })
+                    .collect::<Vec<(
+                        EntityLocation,
+                        crate::generation::entity::window::WindowConfig,
+                    )>>()
+            })
+            .collect()
     }
 
     fn get_player_spawn(&mut self) -> Vec<(EntityLocation, ())> {
         self.map
             .rooms
             .iter()
-            .filter(|x| { 
+            .filter(|x| {
                 let property = x.properties.get(LEVEL_PROPERTIES_SPAWN_NAME);
                 if let Some(property) = property {
                     if let Value::Bool(b) = property {
                         return *b;
                     }
                 }
-                return false; 
-            }).flat_map(|roor| {
+                return false;
+            })
+            .flat_map(|roor| {
                 roor.entity_locations
                     .player_spawns
                     .iter()
-                    .map(|y| (
-                        EntityLocation{
-                            position: y.position,
-                            size: y.size,
-                            level_iid: roor.level_iid.clone()
-                        },
-                        ()
-                    ))
+                    .map(|y| {
+                        (
+                            EntityLocation {
+                                position: y.position,
+                                size: y.size,
+                                level_iid: roor.level_iid.clone(),
+                            },
+                            (),
+                        )
+                    })
                     .collect::<Vec<(EntityLocation, ())>>()
-
-            }).collect()
+            })
+            .collect()
     }
-
 }

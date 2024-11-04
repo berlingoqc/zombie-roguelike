@@ -1,15 +1,15 @@
-use bevy::prelude::*; use bevy_ecs_ldtk::prelude::*;
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
 
-use crate::{game::entity::map::window::WindowComponent, generation::entity::window::WindowConfig,};
+use crate::{game::entity::map::window::WindowComponent, generation::entity::window::WindowConfig};
 
 impl WindowComponent {
     pub fn from_field(_: &EntityInstance) -> Self {
-        Self { 
-            config: WindowConfig {}
+        Self {
+            config: WindowConfig {},
         }
     }
 }
-
 
 #[derive(Default, Bundle, LdtkEntity)]
 pub struct WindowBundle {
@@ -18,4 +18,3 @@ pub struct WindowBundle {
     #[sprite_sheet_bundle]
     sprite_sheet: LdtkSpriteSheetBundle,
 }
-

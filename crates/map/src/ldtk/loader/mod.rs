@@ -1,6 +1,5 @@
 pub mod file;
 
-
 use bevy::prelude::*;
 use bevy_ecs_ldtk::assets::{LdtkProjectLoader, LdtkProjectLoaderSettings};
 use bevy_ecs_ldtk::prelude::*;
@@ -11,7 +10,6 @@ use crate::generation::config::MapGenerationConfig;
 use crate::generation::map_generation;
 
 use super::generation::{from_map, GeneratedMap};
-
 
 static mut CONFIG: Lazy<MapGenerationConfig> = Lazy::new(|| MapGenerationConfig::default());
 

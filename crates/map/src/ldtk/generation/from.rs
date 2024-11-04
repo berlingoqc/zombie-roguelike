@@ -2,8 +2,18 @@ use std::rc::Rc;
 
 use bevy_ecs_ldtk::ldtk::{FieldValue, LayerInstance, LdtkJson, Level};
 
-use crate::{generation::{config::MapGenerationConfig, context::{populate_level_connections, scan_height_side, scan_width_side, AvailableLevel, LevelType, MapGenerationContext, Side}, entity::location::{EntityLocation, EntityLocations}, position::Position}, ldtk::map_const};
-
+use crate::{
+    generation::{
+        config::MapGenerationConfig,
+        context::{
+            populate_level_connections, scan_height_side, scan_width_side, AvailableLevel,
+            LevelType, MapGenerationContext, Side,
+        },
+        entity::location::{EntityLocation, EntityLocations},
+        position::Position,
+    },
+    ldtk::map_const,
+};
 
 fn get_level_field(level: &Level, name: &str) -> Option<FieldValue> {
     level
@@ -21,7 +31,11 @@ macro_rules! get_entities {
             .map(|x| {
                 let position = Position(x.grid.x, x.grid.y);
                 let size = (x.width / $tile_size.0, x.height / $tile_size.1);
-                $type { position, size, level_iid: "".to_string() }
+                $type {
+                    position,
+                    size,
+                    level_iid: "".to_string(),
+                }
             })
             .collect()
     };
@@ -234,4 +248,3 @@ pub fn from_map(map_json: &LdtkJson, config: MapGenerationConfig) -> MapGenerati
         available_levels,
     }
 }
-
