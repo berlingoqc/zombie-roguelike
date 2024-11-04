@@ -1,14 +1,17 @@
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::{game::entity::map::room::RoomComponent, generation::{entity::room::RoomConfig, LEVEL_PROPERTIES_SPAWN_NAME}};
+use crate::{
+    game::entity::map::room::RoomComponent,
+    generation::{entity::room::RoomConfig, LEVEL_PROPERTIES_SPAWN_NAME},
+};
 
 pub fn add_room_component_to_ldtk_level(
     mut level_events: EventReader<LevelEvent>,
     levels: Query<(Entity, &LevelIid)>,
     projects: Query<&Handle<LdtkProject>>,
     project_assets: Res<Assets<LdtkProject>>,
-    mut commands: Commands
+    mut commands: Commands,
 ) {
     for level_event in level_events.read() {
         if matches!(level_event, LevelEvent::Spawned(_)) {
@@ -23,9 +26,11 @@ pub fn add_room_component_to_ldtk_level(
                     .get_bool_field(LEVEL_PROPERTIES_SPAWN_NAME)
                     .expect("level should have non-nullable title string field");
 
-                let room_config = RoomConfig{ spawn: *is_spawn };
+                let room_config = RoomConfig { spawn: *is_spawn };
 
-                commands.entity(entity).insert(RoomComponent{ config: room_config });
+                commands.entity(entity).insert(RoomComponent {
+                    config: room_config,
+                });
 
                 if *is_spawn == true {
                     println!("found a spawn level: {}", level_iid);

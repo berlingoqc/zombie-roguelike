@@ -1,11 +1,21 @@
 use std::rc::Rc;
 
-use bevy::{math::{IVec2, Vec2}, utils::Uuid};
-use bevy_ecs_ldtk::{ldtk::{FieldInstance, FieldValue, LdtkJson, Level, NeighbourLevel, RealEditorValue, TilesetRectangle}, EntityInstance};
+use bevy::math::{IVec2, Vec2};
+use bevy_ecs_ldtk::{
+    ldtk::{FieldInstance, FieldValue, LdtkJson, Level, NeighbourLevel, RealEditorValue},
+    EntityInstance,
+};
 use serde_json::Value;
+use uuid::Uuid;
 
-use crate::{generation::{entity::location::EntityLocation, position::Position, room::{Room, RoomConnection}, IMapGenerator}, ldtk::map_const::{self, FIELD_ELECTRIFY_NAME, FIELD_PRICE_NAME, LAYER_ENTITY}};
-
+use crate::{
+    generation::{
+        entity::location::EntityLocation,
+        room::{Room, RoomConnection},
+        IMapGenerator,
+    },
+    ldtk::map_const::{self, FIELD_ELECTRIFY_NAME, FIELD_PRICE_NAME, LAYER_ENTITY},
+};
 
 #[derive(Debug, Clone)]
 pub struct GeneratedRoom {
@@ -32,18 +42,15 @@ impl GeneratedRoom {
             for field in level.field_instances.iter_mut() {
                 if let Some(value) = room.properties.get(field.identifier.as_str()) {
                     field.value = match value {
-                      Value::Bool(b_value) => FieldValue::Bool(*b_value),
-                      _ => FieldValue::String(None)  
+                        Value::Bool(b_value) => FieldValue::Bool(*b_value),
+                        _ => FieldValue::String(None),
                     };
-                    field.real_editor_values = vec![
-                        Some(RealEditorValue{
-                            // TODO: do the correct mapping
-                           id: "V_Bool".to_string(),
-                           params: vec![value.clone()]
-                        })
-                    ]
+                    field.real_editor_values = vec![Some(RealEditorValue {
+                        // TODO: do the correct mapping
+                        id: "V_Bool".to_string(),
+                        params: vec![value.clone()],
+                    })]
                 }
-            
             }
         }
         level
@@ -68,9 +75,7 @@ pub struct GeneratedMap {
     pub generated_rooms: Vec<GeneratedRoom>,
 }
 
-
-pub fn add_property_entity() {}
-
+pub fn _add_property_entity() {}
 
 pub fn get_new_entity(
     room: &GeneratedRoom,
@@ -88,7 +93,10 @@ pub fn get_new_entity(
         .find(|x| x.identifier == original_entity_identifier)
         .unwrap();
 
-    let px = (location.position.0 * tile_size.0, location.position.1 * tile_size.1);
+    let px = (
+        location.position.0 * tile_size.0,
+        location.position.1 * tile_size.1,
+    );
     let world_px = (px.0 + room.level.world_x, px.1 + room.level.world_y);
 
     let identifiers = fields
@@ -106,11 +114,9 @@ pub fn get_new_entity(
                 _ => None,
             };
 
-            let real_editor_value = real_editor_value.map(|v| {
-                RealEditorValue{
-                    id: v.0.to_string(),
-                    params: vec![v.1]
-                }
+            let real_editor_value = real_editor_value.map(|v| RealEditorValue {
+                id: v.0.to_string(),
+                params: vec![v.1],
             });
 
             FieldInstance {
@@ -119,9 +125,7 @@ pub fn get_new_entity(
                 field_instance_type: field.field_definition_type.clone(),
                 value: x.1.clone(),
                 tile: None,
-                real_editor_values: vec![
-                    real_editor_value
-                ],
+                real_editor_values: vec![real_editor_value],
             }
         })
         .collect();
@@ -143,7 +147,6 @@ pub fn get_new_entity(
         world_y: Some(world_px.1),
     }
 }
-
 
 impl GeneratedMap {
     pub fn create(ldtk_json: LdtkJson) -> Self {
@@ -170,8 +173,12 @@ impl GeneratedMap {
         new_map
     }
 
-
-    fn add_entity_to_level(&mut self, location: &EntityLocation, entity_type: &str, fields: Vec<(&str, FieldValue)>) {
+    fn add_entity_to_level(
+        &mut self,
+        location: &EntityLocation,
+        entity_type: &str,
+        fields: Vec<(&str, FieldValue)>,
+    ) {
         let level = self
             .generated_rooms
             .iter_mut()
@@ -186,7 +193,7 @@ impl GeneratedMap {
                 self.ldtk_json.default_entity_width,
                 self.ldtk_json.default_entity_height,
             ),
-            fields
+            fields,
         );
 
         level
@@ -200,7 +207,6 @@ impl GeneratedMap {
             .entity_instances
             .push(new_entity);
     }
-
 }
 
 impl IMapGenerator for GeneratedMap {
@@ -214,7 +220,11 @@ impl IMapGenerator for GeneratedMap {
 
         println!(
             "adding room id={} type={:?} from_level={} position={} \n property={:?}",
-            room.level_iid, room.level_def.level_type, room.level_def.level_id, room.position, room.properties
+            room.level_iid,
+            room.level_def.level_type,
+            room.level_def.level_id,
+            room.position,
+            room.properties
         );
 
         if let Some(connected_to) = connected_to {
@@ -250,7 +260,10 @@ impl IMapGenerator for GeneratedMap {
         self.generated_rooms.push(generated_room);
     }
 
-    fn add_doors(&mut self, doors: &Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)>) {
+    fn add_doors(
+        &mut self,
+        doors: &Vec<(EntityLocation, crate::generation::entity::door::DoorConfig)>,
+    ) {
         for (location, door) in doors.iter() {
             self.add_entity_to_level(
                 location,
@@ -258,21 +271,26 @@ impl IMapGenerator for GeneratedMap {
                 vec![
                     (FIELD_PRICE_NAME, FieldValue::Int(Some(door.cost))),
                     (FIELD_ELECTRIFY_NAME, FieldValue::Bool(door.electrify)),
-                ]
+                ],
             );
         }
     }
 
-    fn add_windows(&mut self, windows: &Vec<(EntityLocation, crate::generation::entity::window::WindowConfig)>) {
+    fn add_windows(
+        &mut self,
+        windows: &Vec<(
+            EntityLocation,
+            crate::generation::entity::window::WindowConfig,
+        )>,
+    ) {
         for (location, _) in windows.iter() {
-            self.add_entity_to_level(location, map_const::ENTITY_WINDOW_LOCATION,vec![]);
+            self.add_entity_to_level(location, map_const::ENTITY_WINDOW_LOCATION, vec![]);
         }
     }
-    
+
     fn add_player_spawns(&mut self, player_spawns: &Vec<(EntityLocation, ())>) {
         for (location, _) in player_spawns.iter() {
             self.add_entity_to_level(location, map_const::ENTITY_PLAYER_SPAWN_LOCATION, vec![]);
         }
     }
 }
-

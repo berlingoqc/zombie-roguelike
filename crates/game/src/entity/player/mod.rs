@@ -3,19 +3,16 @@
 
 use bevy::prelude::*;
 
-
-
 #[derive(Component)]
 pub struct Player {
     pub handle: usize,
 }
 
-
 #[derive(Bundle)]
 pub struct PlayerBundle {
     pub player: Player,
     //#[bundle]
-    pub sprite: SpriteSheetBundle,
+    //pub sprite: SpriteSheetBundle,
 
     //pub velocity: Velocity,
     //pub player_current_input: PlayerCurrentInput,

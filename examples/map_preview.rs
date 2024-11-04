@@ -2,11 +2,16 @@ use bevy::{prelude::*, window::WindowResolution};
 use bevy_ecs_ldtk::prelude::*;
 
 use map::{
-    generation::{config::MapGenerationConfig, LEVEL_PROPERTIES_SPAWN_NAME}, ldtk::{ loader::{get_asset_loader_generation, reload_map, setup_generated_map}, plugins::{LdtkRoguePlugin, MyWorldInspectorPlugin}}
+    generation::config::MapGenerationConfig,
+    ldtk::{
+        loader::{get_asset_loader_generation, reload_map, setup_generated_map},
+        plugins::{LdtkRoguePlugin, MyWorldInspectorPlugin},
+    },
 };
-use utils::{camera::tod::{move_camera, setup_camera}, web::WebPlugin};
-
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use utils::{
+    camera::tod::{move_camera, setup_camera},
+    web::WebPlugin,
+};
 
 use rand::Rng;
 
@@ -18,9 +23,9 @@ fn main() {
     let map_generation_config = get_config();
     let window_plugin = WindowPlugin {
         primary_window: Some(Window {
-            title: "Zombie RogueLike".to_string(),
+            title: "zrl-map-preview".to_string(),
             resolution: WindowResolution::new(800., 600.),
-            
+
             resizable: true,
             #[cfg(target_arch = "wasm32")]
             canvas: Some("#bevy-canvas".to_string()),
@@ -30,7 +35,11 @@ fn main() {
     };
 
     App::new()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()).set(window_plugin))
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(window_plugin),
+        )
         .add_plugins(MyWorldInspectorPlugin)
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, setup_generated_map)
@@ -38,10 +47,9 @@ fn main() {
         .insert_resource(map_generation_config)
         .register_asset_loader(level_loader)
         .add_systems(Update, (load_levels_if_not_present, move_camera, keyinput))
-        .add_plugins(WebPlugin{})
+        .add_plugins(WebPlugin {})
         .run();
 }
-
 
 // should be a step before the game part
 fn load_levels_if_not_present(
