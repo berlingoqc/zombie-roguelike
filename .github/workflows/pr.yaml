@@ -26,6 +26,6 @@ jobs:
       - name: Dependency
         run: sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev libxkbcommon-x11-0 libwayland-dev libxkbcommon-dev && rustup component add rustfmt
       - name: Test
-        run: cargo test
+        run: cargo vendor && cargo test
       - name: Style Check
         run: cargo fmt --all -- --check
