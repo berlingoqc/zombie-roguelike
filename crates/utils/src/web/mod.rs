@@ -1,8 +1,9 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 
 pub struct WebPlugin {}
 
 impl Plugin for WebPlugin {
+    #[warn(unused_variables)]
     fn build(&self, app: &mut App) {
         #[cfg(target_arch = "wasm32")]
         {
@@ -11,7 +12,6 @@ impl Plugin for WebPlugin {
         }
     }
 }
-
 
 #[cfg(target_arch = "wasm32")]
 fn update_window_size(mut window: Query<&mut Window, With<PrimaryWindow>>) {

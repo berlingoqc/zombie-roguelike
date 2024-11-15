@@ -11,9 +11,9 @@ exclude = ["assets/*", "repo/*", "scripts/*"]
 members = [ "crates/*" ]
 
 [dependencies]
-bevy_ecs_tilemap = { version = "0.12", default-features = false }
-bevy_ecs_ldtk = { version = "0.9", default-features = true }
-bevy = { version = "0.13", default-features = false, features = ["bevy_sprite", "bevy_render", "bevy_core_pipeline",] }
+bevy_ecs_tilemap = { version = "0.14", default-features = false }
+bevy_ecs_ldtk = { version = "0.10", default-features = true }
+bevy = { version = "0.14", default-features = false, features = ["bevy_sprite", "bevy_render", "bevy_core_pipeline",] }
 derive-getters = "0.3.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -27,8 +27,8 @@ map = { path = "./crates/map" }
 game = { path = "./crates/game" }
 
 [dev-dependencies]
-bevy = "0.13"
-bevy-inspector-egui = "0.23.0"
+bevy = "0.14"
+bevy-inspector-egui = "0.25.0"
 
 [package.metadata.docs.rs]
 all-features = true

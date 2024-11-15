@@ -8,4 +8,3 @@ pub struct CharacterMovementState {
 
 #[derive(Default, Component, Reflect)]
 pub struct LookingAt(pub Vec2, pub bool);
-
